@@ -1,22 +1,35 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 
 interface LoginPageProps {
   onLogin: (username: string, password: string) => void;
   onGoogleLogin: () => void;
-  onSignupClick: () => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoogleLogin, onSignupClick }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoogleLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(username, password);
-    window.location.href = '/';
+    setError('');
+    
+    if (!username || !password) {
+      setError('아이디와 비밀번호를 모두 입력해주세요.');
+      return;
+    }
+
+    try {
+      onLogin(username, password);
+      navigate('/');
+    } catch (err) {
+      setError('로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.');
+    }
   };
 
   const togglePasswordVisibility = () => {
@@ -31,6 +44,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoogleLogin, onSignupC
         </div>
         
         <form className="login-form" onSubmit={handleSubmit}>
+          {error && <div className="error-message">{error}</div>}
+          
           <div className="input-group">
             <input
               type="text"
@@ -74,7 +89,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoogleLogin, onSignupC
             </label>
           </div>
           
-          <button type="submit">로그인</button>
+          <button type="submit" className="login-button">로그인</button>
         </form>
         
         <div className="separator">
@@ -87,7 +102,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onGoogleLogin, onSignupC
         </button>
 
         <div className="signup-link">
-          계정이 없으신가요? <a href="#" onClick={(e) => { e.preventDefault(); onSignupClick(); }}>회원가입</a>
+          계정이 없으신가요? <a href="/signup">회원가입</a>
         </div>
       </div>
     </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { 
   BarChart2, Calendar, BookOpen, MessageCircle, 
-  Clock, Settings, LogOut
+  Clock, Settings, LogOut, User, Home, Smile
 } from 'lucide-react';
 import './App.css';
 import LoginPage from './components/LoginPage';
@@ -97,11 +97,11 @@ const Layout: React.FC<{
       label: '분석'
     },
     { 
-      name: 'Settings', 
+      name: '설정', 
       icon: <Settings size={24} />, 
       path: '/settings',
-      label: 'Settings'
-    },
+      label: '설정'
+    }
   ];
 
   const isActive = (path: string) => {
@@ -112,47 +112,34 @@ const Layout: React.FC<{
     <div className="app-layout">
       <div className="sidebar">
         <div className="sidebar-header">
-          <div className="sidebar-logo">
+          <div className="logo-container">
             <img src="/logo.png" alt="MoodMate Logo" className="logo-image" />
-            <h1 className="logo-text">mood<br />mate</h1>
           </div>
-          {user.isLoggedIn && (
-            <div className="sidebar-profile">
-              <img 
-                src={user.profileImage || "/default-profile.png"} 
-                alt="프로필" 
-                className="profile-image"
-              />
-              <span className="profile-name">{user.name}</span>
-            </div>
-          )}
         </div>
-
-        <nav className="sidebar-menu">
-          <ul>
-            {menuItems.map((item, index) => (
-              <li key={index}>
-                <button 
-                  className={`menu-item ${isActive(item.path) ? 'active' : ''}`}
-                  onClick={() => navigate(item.path)}
-                >
-                  <span className="item-icon">{item.icon}</span>
-                  <span className="item-label">{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        <div className="sidebar-footer">
-          <button className="logout-button" onClick={onLogout}>
-            <LogOut size={20} />
-            <span>Log out</span>
-          </button>
+        <div className="user-profile">
+          <img src={user?.profileImage || '/default-profile.png'} alt="Profile" className="profile-image" />
+          <span className="user-name">{user?.name || '사용자'}</span>
+        </div>
+        <div className="sidebar-menu">
+          {menuItems.map((item) => (
+            <button
+              key={item.name}
+              className={`menu-item ${isActive(item.path) ? 'active' : ''}`}
+              onClick={() => navigate(item.path)}
+            >
+              {item.icon}
+              <span className="item-label">{item.label}</span>
+            </button>
+          ))}
         </div>
       </div>
-      
-      <div className="main-container">
+      <div className="logout-container">
+        <button className="logout-button" onClick={onLogout}>
+          <LogOut className="item-icon" />
+          <span>로그아웃</span>
+        </button>
+      </div>
+      <div className="content">
         {children}
       </div>
     </div>
@@ -160,137 +147,134 @@ const Layout: React.FC<{
 };
 
 function AppWrapper() {
-  const [user, setUser] = useState<User>({ isLoggedIn: false });
+  const [user, setUser] = useState<User>({
+    isLoggedIn: false,
+    name: '홍길동',
+    profileImage: 'https://via.placeholder.com/150'
+  });
 
   const handleLogin = (username: string, password: string) => {
+    // 실제 로그인 로직은 여기에 구현
     setUser({
       isLoggedIn: true,
-      name: username || '사용자',
-      profileImage: 'https://via.placeholder.com/40'
+      name: '홍길동',
+      profileImage: 'https://via.placeholder.com/150'
     });
   };
 
   const handleGoogleLogin = () => {
-    console.log('구글 로그인 시도');
+    // Google 로그인 로직 구현
+    setUser({
+      isLoggedIn: true,
+      name: '홍길동',
+      profileImage: 'https://via.placeholder.com/150'
+    });
   };
 
   const handleSignup = (name: string, username: string, password: string, confirmPassword: string) => {
-    console.log('회원가입 시도:', { name, username, password, confirmPassword });
+    // 회원가입 로직 구현
     setUser({
       isLoggedIn: true,
       name: name,
-      profileImage: 'https://via.placeholder.com/40'
+      profileImage: 'https://via.placeholder.com/150'
     });
   };
 
   const handleGoogleSignup = () => {
-    console.log('구글 회원가입 시도');
+    // Google 회원가입 로직 구현
+    setUser({
+      isLoggedIn: true,
+      name: '홍길동',
+      profileImage: 'https://via.placeholder.com/150'
+    });
   };
 
   const handleLogout = () => {
-    setUser({ isLoggedIn: false });
+    setUser({
+      isLoggedIn: false
+    });
   };
 
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={
+        <Route path="/" element={
+          user.isLoggedIn ? (
             <Layout user={user} onLogout={handleLogout}>
               <MainPage />
             </Layout>
-          }
-        />
-        <Route
-          path="/login"
-          element={
-            user.isLoggedIn ? 
-            <Navigate to="/" /> :
-            <LoginPage
-              onLogin={handleLogin}
-              onGoogleLogin={handleGoogleLogin}
-              onSignupClick={() => window.location.href = '/signup'}
-            />
-          }
-        />
-        <Route
-          path="/signup"
-          element={
-            user.isLoggedIn ? 
-            <Navigate to="/" /> :
-            <SignupPage
-              onSignup={handleSignup}
-              onGoogleSignup={handleGoogleSignup}
-            />
-          }
-        />
-        <Route
-          path="/calendar"
-          element={
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/calendar" element={
+          user.isLoggedIn ? (
             <Layout user={user} onLogout={handleLogout}>
-              <CalendarPage
-                isLoggedIn={user.isLoggedIn}
-                userName={user.name || ''}
-                onLogin={() => {}}
-                onLogout={handleLogout}
-              />
+              <CalendarPage />
             </Layout>
-          }
-        />
-        <Route
-          path="/diary"
-          element={
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/diary" element={
+          user.isLoggedIn ? (
             <Layout user={user} onLogout={handleLogout}>
-              <DiaryPage
-                isLoggedIn={user.isLoggedIn}
-                userName={user.name || ''}
-                onLogin={() => {}}
-                onLogout={handleLogout}
-              />
+              <DiaryPage />
             </Layout>
-          }
-        />
-        <Route
-          path="/analysis"
-          element={
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/analysis" element={
+          user.isLoggedIn ? (
             <Layout user={user} onLogout={handleLogout}>
               <AnalysisPage />
             </Layout>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/chats" element={
+          user.isLoggedIn ? (
             <Layout user={user} onLogout={handleLogout}>
-              <ComingSoonPage title="Dashboard" />
+              <ComingSoonPage title="Chat" />
             </Layout>
-          }
-        />
-        <Route
-          path="/chats"
-          element={
-            <Layout user={user} onLogout={handleLogout}>
-              <ComingSoonPage title="Chats" />
-            </Layout>
-          }
-        />
-        <Route
-          path="/history"
-          element={
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/history" element={
+          user.isLoggedIn ? (
             <Layout user={user} onLogout={handleLogout}>
               <ComingSoonPage title="History" />
             </Layout>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/settings" element={
+          user.isLoggedIn ? (
             <Layout user={user} onLogout={handleLogout}>
               <ComingSoonPage title="Settings" />
             </Layout>
-          }
-        />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        } />
+        <Route path="/login" element={
+          user.isLoggedIn ? (
+            <Navigate to="/" replace />
+          ) : (
+            <LoginPage onLogin={handleLogin} onGoogleLogin={handleGoogleLogin} />
+          )
+        } />
+        <Route path="/signup" element={
+          user.isLoggedIn ? (
+            <Navigate to="/" replace />
+          ) : (
+            <SignupPage onSignup={handleSignup} onGoogleSignup={handleGoogleSignup} />
+          )
+        } />
       </Routes>
     </Router>
   );
