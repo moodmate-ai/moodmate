@@ -61,10 +61,10 @@ const Layout: React.FC<{
 
   const menuItems = [
     { 
-      name: 'Dashboard', 
+      name: '대시보드', 
       icon: <BarChart2 size={24} />, 
       path: '/',
-      label: 'Dashboard'
+      label: '대시보드'
     },
     { 
       name: '달력', 
