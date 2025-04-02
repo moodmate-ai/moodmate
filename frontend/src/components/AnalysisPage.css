@@ -1,0 +1,300 @@
+.analysis-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.month-navigator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 32px 0;
+}
+
+.month-title {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0 16px;
+  color: #333;
+}
+
+.month-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s;
+  padding: 8px;
+}
+
+.month-button:hover {
+  color: #333;
+}
+
+/* 탭 내비게이션 */
+.tabs-container {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.tabs-list {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tab-button {
+  display: flex;
+  align-items: center;
+  padding: 16px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #666;
+}
+
+.tab-button:hover {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.tab-button-active {
+  color: #4CAF50;
+  border-bottom: 2px solid #4CAF50;
+}
+
+.tab-icon {
+  margin-right: 8px;
+}
+
+/* 차트 카드 */
+.chart-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.chart-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+.info-button {
+  color: #bdbdbd;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.info-button:hover {
+  color: #757575;
+}
+
+.chart-body {
+  padding: 24px;
+}
+
+.mood-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.mood-legend-item {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+}
+
+.mood-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.mood-name {
+  font-size: 12px;
+  color: #757575;
+}
+
+.chart-container {
+  height: 280px;
+  width: 100%;
+}
+
+/* 인사이트 카드 */
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.insight-card {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.insight-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #757575;
+  margin-bottom: 8px;
+}
+
+.insight-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #333;
+  margin-right: 8px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.insight-change {
+  font-size: 14px;
+  color: #4CAF50;
+  margin-bottom: 4px;
+}
+
+.insight-description {
+  font-size: 14px;
+  color: #757575;
+  margin-top: 8px;
+}
+
+/* 차트 그리드 레이아웃 */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.patterns-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+}
+
+.patterns-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.patterns-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #757575;
+  cursor: pointer;
+}
+
+.filter-icon {
+  margin-right: 4px;
+}
+
+.pattern-section {
+  margin-bottom: 24px;
+}
+
+.pattern-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.pattern-text {
+  font-size: 14px;
+  color: #757575;
+  line-height: 1.6;
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.activity-list-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.activity-list {
+  list-style-type: disc;
+  padding-left: 20px;
+}
+
+.activity-item {
+  font-size: 14px;
+  color: #757575;
+  margin-bottom: 4px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 992px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .insights-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .activity-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tab-button {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+  
+  .chart-title,
+  .patterns-title {
+    font-size: 16px;
+  }
+  
+  .insight-value {
+    font-size: 24px;
+  }
+}
