@@ -19,7 +19,7 @@ const SignupPage: React.FC<SignupPageProps> = ({ onSignup, onGoogleSignup }) => 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSignup(name, username, password, confirmPassword);
-    navigate('/');
+    navigate('/dashboard');
   };
 
   const togglePasswordVisibility = () => {

@@ -11,9 +11,7 @@ import CalendarPage from './components/CalendarPage';
 import DiaryPage from './components/DiaryPage';
 import AnalysisPage from './components/AnalysisPage';
 import ChatPage from './components/ChatPage';
-import HistoryPage from './components/HistoryPage';
-import SettingsPage from './components/SettingsPage';
-import DashboardPage from './components/DashboardPage';
+import LandingPage from './components/LandingPage';
 
 interface User {
   isLoggedIn: boolean;
@@ -63,14 +61,8 @@ const Layout: React.FC<{
     { 
       name: '대시보드', 
       icon: <BarChart2 size={24} />, 
-      path: '/',
+      path: '/dashboard',
       label: '대시보드'
-    },
-    { 
-      name: '달력', 
-      icon: <Calendar size={24} />, 
-      path: '/calendar',
-      label: '달력'
     },
     { 
       name: '일기', 
@@ -85,16 +77,22 @@ const Layout: React.FC<{
       label: '채팅'
     },
     { 
-      name: '기록', 
-      icon: <Clock size={24} />, 
-      path: '/history',
-      label: '기록'
+      name: '달력', 
+      icon: <Calendar size={24} />, 
+      path: '/calendar',
+      label: '달력'
     },
     { 
       name: '분석', 
       icon: <BarChart2 size={24} />, 
       path: '/analysis',
       label: '분석'
+    },
+    { 
+      name: '기록', 
+      icon: <Clock size={24} />, 
+      path: '/history',
+      label: '기록'
     },
     { 
       name: '설정', 
@@ -152,6 +150,7 @@ function AppWrapper() {
     name: '홍길동',
     profileImage: 'https://via.placeholder.com/150'
   });
+  const navigate = useNavigate();
 
   const handleLogin = (username: string, password: string) => {
     // 실제 로그인 로직은 여기에 구현
@@ -193,91 +192,107 @@ function AppWrapper() {
     setUser({
       isLoggedIn: false
     });
+    navigate('/');
   };
 
   return (
+    <Routes>
+      <Route path="/" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <MainPage />
+          </Layout>
+        ) : (
+          <LandingPage />
+        )
+      } />
+      <Route path="/dashboard" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <MainPage />
+          </Layout>
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
+      <Route path="/calendar" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <CalendarPage isLoggedIn={user.isLoggedIn} userName={user.name || ''} onLogin={() => {}} onLogout={handleLogout} />
+          </Layout>
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
+      <Route path="/diary" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <DiaryPage isLoggedIn={user.isLoggedIn} userName={user.name || ''} onLogin={() => {}} onLogout={handleLogout} />
+          </Layout>
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
+      <Route path="/analysis" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <AnalysisPage />
+          </Layout>
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
+      <Route path="/chats" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <ChatPage />
+          </Layout>
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
+      <Route path="/history" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <ComingSoonPage title="History" />
+          </Layout>
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
+      <Route path="/settings" element={
+        user.isLoggedIn ? (
+          <Layout user={user} onLogout={handleLogout}>
+            <ComingSoonPage title="Settings" />
+          </Layout>
+        ) : (
+          <Navigate to="/login" replace />
+        )
+      } />
+      <Route path="/login" element={
+        user.isLoggedIn ? (
+          <Navigate to="/dashboard" replace />
+        ) : (
+          <LoginPage onLogin={handleLogin} onGoogleLogin={handleGoogleLogin} />
+        )
+      } />
+      <Route path="/signup" element={
+        user.isLoggedIn ? (
+          <Navigate to="/dashboard" replace />
+        ) : (
+          <SignupPage onSignup={handleSignup} onGoogleSignup={handleGoogleSignup} />
+        )
+      } />
+    </Routes>
+  );
+}
+
+function App() {
+  return (
     <Router>
-      <Routes>
-        <Route path="/" element={
-          user.isLoggedIn ? (
-            <Layout user={user} onLogout={handleLogout}>
-              <MainPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/calendar" element={
-          user.isLoggedIn ? (
-            <Layout user={user} onLogout={handleLogout}>
-              <CalendarPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/diary" element={
-          user.isLoggedIn ? (
-            <Layout user={user} onLogout={handleLogout}>
-              <DiaryPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/analysis" element={
-          user.isLoggedIn ? (
-            <Layout user={user} onLogout={handleLogout}>
-              <AnalysisPage />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/chats" element={
-          user.isLoggedIn ? (
-            <Layout user={user} onLogout={handleLogout}>
-              <ComingSoonPage title="Chat" />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/history" element={
-          user.isLoggedIn ? (
-            <Layout user={user} onLogout={handleLogout}>
-              <ComingSoonPage title="History" />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/settings" element={
-          user.isLoggedIn ? (
-            <Layout user={user} onLogout={handleLogout}>
-              <ComingSoonPage title="Settings" />
-            </Layout>
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        } />
-        <Route path="/login" element={
-          user.isLoggedIn ? (
-            <Navigate to="/" replace />
-          ) : (
-            <LoginPage onLogin={handleLogin} onGoogleLogin={handleGoogleLogin} />
-          )
-        } />
-        <Route path="/signup" element={
-          user.isLoggedIn ? (
-            <Navigate to="/" replace />
-          ) : (
-            <SignupPage onSignup={handleSignup} onGoogleSignup={handleGoogleSignup} />
-          )
-        } />
-      </Routes>
+      <AppWrapper />
     </Router>
   );
 }
 
-export default AppWrapper;
+export default App;

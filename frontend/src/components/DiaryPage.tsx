@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Image, BarChart2, Trash2, Edit3, Smile } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Image, BarChart2, Trash2, Edit3, Smile, Save } from 'lucide-react';
 import './DiaryPage.css';
 
 interface DiaryPageProps {
@@ -14,6 +14,9 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const [currentMonth, setCurrentMonth] = useState(10); // 11월 (0-indexed)
   const [currentYear, setCurrentYear] = useState(2025);
   const [currentMood, setCurrentMood] = useState('neutral');
+  const [content, setContent] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // 월 이름 배열
   const months = [
@@ -102,6 +105,59 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
     return `${year}.${month}.${day} ${dayOfWeek}`;
   };
   
+  // 이미지 업로드 처리
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      const newImages: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          newImages.push(reader.result as string);
+          if (i === files.length - 1) {
+            setImages(prev => [...prev, ...newImages]);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  };
+
+  // 이미지 버튼 클릭 처리
+  const handleImageButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  // 일기 저장 처리
+  const handleSave = () => {
+    if (!content.trim()) {
+      alert('일기 내용을 입력해주세요.');
+      return;
+    }
+
+    const newEntry = {
+      id: diaryEntries.length + 1,
+      date: new Date().toISOString().split('T')[0],
+      day: ['일', '월', '화', '수', '목', '금', '토'][new Date().getDay()],
+      mood: currentMood,
+      moodEmoji: getMoodEmoji(currentMood),
+      content: content,
+      images: images,
+      growth: Math.floor(Math.random() * 30) + 70 // 임시로 70-100 사이의 랜덤 값
+    };
+
+    // 여기에 실제 저장 로직 추가 (API 호출 등)
+    console.log('새로운 일기 저장:', newEntry);
+    
+    // 상태 초기화
+    setContent('');
+    setImages([]);
+    setCurrentMood('neutral');
+    
+    alert('일기가 저장되었습니다!');
+  };
+
   return (
     <main className="diary-content">
       <div className="diary-container">
@@ -165,18 +221,48 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
               className={`diary-input ${getMoodColor(currentMood)}`}
               placeholder="오늘 하루는 어땠나요? 생각과 느낌을 자유롭게 적어보세요..."
               rows={6}
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
             ></textarea>
+            
+            {/* 이미지 미리보기 */}
+            {images.length > 0 && (
+              <div className="image-preview">
+                {images.map((image, index) => (
+                  <div key={index} className="preview-image-container">
+                    <img src={image} alt={`미리보기 ${index + 1}`} />
+                    <button 
+                      className="remove-image"
+                      onClick={() => setImages(prev => prev.filter((_, i) => i !== index))}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             
             {/* 기능 버튼 */}
             <div className="diary-actions">
               <div className="action-buttons">
-                <button className="action-button">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  multiple
+                  style={{ display: 'none' }}
+                />
+                <button className="action-button" onClick={handleImageButtonClick}>
                   <Image size={20} />
                 </button>
               </div>
-              <button className="save-button">
-                저장하기
-              </button>
+              <div className="save-button-container">
+                <button className="save-button" onClick={handleSave}>
+                  <Save size={20} />
+                  <span>저장하기</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
