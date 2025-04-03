@@ -1,0 +1,287 @@
+.calendar-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: var(--background-color);
+  min-height: calc(100vh - 80px);
+  position: relative;
+  overflow: hidden;
+}
+
+.calendar-container {
+  width: 100%;
+  max-width: 1000px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.calendar-header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.month-nav-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.month-nav-button:hover {
+  background-color: #f3f4f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.month-nav-button svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2;
+}
+
+.current-month {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.weekday-header {
+  text-align: center;
+  padding: 0.5rem;
+  font-weight: 500;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.weekday-header.sunday {
+  color: #e74c3c;
+}
+
+.weekday-header.saturday {
+  color: #3498db;
+}
+
+.calendar-cell {
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.calendar-cell.empty {
+  color: #ccc;
+}
+
+.calendar-cell:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 기분별 색상 */
+.calendar-cell.happy {
+  background-color: #fef9c3;
+}
+
+.calendar-cell.sad {
+  background-color: #bfdbfe;
+}
+
+.calendar-cell.anxious {
+  background-color: #bbf7d0;
+}
+
+.calendar-cell.excited {
+  background-color: #fed7aa;
+}
+
+.calendar-cell.neutral {
+  background-color: #e5e7eb;
+}
+
+.calendar-cell.happy:hover {
+  background-color: #fef08a;
+}
+
+.calendar-cell.sad:hover {
+  background-color: #93c5fd;
+}
+
+.calendar-cell.anxious:hover {
+  background-color: #86efac;
+}
+
+.calendar-cell.excited:hover {
+  background-color: #fdba74;
+}
+
+.calendar-cell.neutral:hover {
+  background-color: #d1d5db;
+}
+
+.day-number {
+  font-size: 0.875rem;
+  color: #2c3e50;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+}
+
+.mood-emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.mood-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-color {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.legend-color.happy {
+  background-color: #fef9c3;
+}
+
+.legend-color.sad {
+  background-color: #bfdbfe;
+}
+
+.legend-color.anxious {
+  background-color: #bbf7d0;
+}
+
+.legend-color.excited {
+  background-color: #fed7aa;
+}
+
+.legend-color.neutral {
+  background-color: #e5e7eb;
+}
+
+.legend-text {
+  font-size: 0.875rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .calendar-content {
+    margin: 1rem;
+    padding: 1rem;
+  }
+
+  .calendar-container {
+    padding: 1rem;
+  }
+
+  .calendar-grid {
+    gap: 0.25rem;
+  }
+
+  .weekday-header {
+    padding: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .day-number {
+    font-size: 0.75rem;
+  }
+
+  .mood-emoji {
+    font-size: 1.25rem;
+  }
+
+  .mood-legend {
+    gap: 0.5rem;
+    padding: 0.75rem;
+  }
+
+  .legend-item {
+    gap: 0.25rem;
+  }
+
+  .legend-color {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .legend-text {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-content {
+    padding: 0.5rem;
+  }
+
+  .calendar-container {
+    padding: 0.75rem;
+  }
+
+  .calendar-grid {
+    gap: 0.15rem;
+  }
+
+  .weekday-header {
+    padding: 0.15rem;
+    font-size: 0.7rem;
+  }
+
+  .day-number {
+    font-size: 0.7rem;
+  }
+
+  .mood-emoji {
+    font-size: 1rem;
+  }
+} 

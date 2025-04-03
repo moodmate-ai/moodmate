@@ -1,0 +1,397 @@
+.diary-content {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow-y: auto;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.diary-container {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* 월 네비게이션 */
+.month-navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.month-nav-button {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.month-nav-button:hover {
+  background-color: #f3f4f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.current-month {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 1rem;
+}
+
+/* 새 일기 작성 카드 */
+.new-diary-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+  overflow: hidden;
+}
+
+.diary-card-content {
+  padding: 1.5rem;
+}
+
+.diary-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: row;
+}
+
+/* 기분별 카드 배경색 */
+.diary-card.happy {
+  background-color: #fef9c3;
+}
+
+.diary-card.sad {
+  background-color: #bfdbfe;
+}
+
+.diary-card.angry {
+  background-color: #fee2e2;
+}
+
+.diary-card.neutral {
+  background-color: #bbf7d0;
+}
+
+.diary-card.anxious {
+  background-color: #e9d8fd;
+}
+
+.diary-card-header {
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.diary-card-header > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mood-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #bbf7d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  color: #16a34a;
+}
+
+.diary-card-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.diary-card-header p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0 0;
+}
+
+.diary-date {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* 감정 선택 */
+.mood-selection {
+  margin-bottom: 1.5rem;
+}
+
+.mood-selection p {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #4b5563;
+  margin-bottom: 0.5rem;
+}
+
+.mood-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.mood-button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.mood-button.active {
+  border-color: #16a34a;
+  transform: scale(1.1);
+}
+
+/* 감정별 색상 */
+.mood-button.happy {
+  background-color: #fef9c3;
+}
+
+.mood-button.sad {
+  background-color: #bfdbfe;
+}
+
+.mood-button.angry {
+  background-color: #fee2e2;
+}
+
+.mood-button.neutral {
+  background-color: #bbf7d0;
+}
+
+.mood-button.anxious {
+  background-color: #e9d8fd;
+}
+
+/* 일기 입력 */
+.diary-input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  resize: vertical;
+  min-height: 120px;
+  max-height: 300px;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #1f2937;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.diary-input:focus {
+  outline: none;
+  border-color: #16a34a;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1);
+}
+
+/* 기분별 입력창 배경색 제거 */
+.diary-input.happy,
+.diary-input.sad,
+.diary-input.angry,
+.diary-input.neutral,
+.diary-input.anxious {
+  background-color: white;
+}
+
+/* 일기 액션 버튼 */
+.diary-footer {
+  padding: 1rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  margin-top: auto;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+.growth-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.growth-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.growth-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #16a34a;
+}
+
+.diary-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-button {
+  padding: 0.5rem;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  color: #1f2937;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.action-button.delete:hover {
+  color: #ef4444;
+}
+
+.save-button {
+  padding: 0.5rem 1.5rem;
+  background-color: #16a34a;
+  color: white;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.save-button:hover {
+  background-color: #15803d;
+}
+
+/* 일기 목록 */
+.diary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.diary-mood {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mood-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.diary-mood p {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #4b5563;
+  margin: 0;
+  text-align: center;
+}
+
+.diary-content p {
+  color: #4b5563;
+  line-height: 1.4;
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.diary-content p::-webkit-scrollbar {
+  width: 4px;
+}
+
+.diary-content p::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.diary-content p::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.image-gallery {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.image-gallery img {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 0.375rem;
+}
+
+@media (max-width: 768px) {
+  .diary-content {
+    padding: 1rem;
+  }
+
+  .mood-buttons {
+    gap: 0.5rem;
+  }
+
+  .mood-button {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+
+  .image-gallery img {
+    width: 80px;
+    height: 80px;
+  }
+} 
