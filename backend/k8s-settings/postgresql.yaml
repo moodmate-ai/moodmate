@@ -124,4 +124,3 @@ spec:
   ports:
   - port: 5432
 
-
