@@ -4,7 +4,6 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow-y: auto;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -103,11 +102,9 @@
 .diary-card-header {
   padding: 1.5rem 1rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 0.5rem;
-  min-width: 120px;
-  border-right: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .diary-card-header > div:first-child {
@@ -445,6 +442,45 @@
 
 .remove-image:hover {
   background-color: rgba(0, 0, 0, 0.7);
+}
+
+.date-selection {
+  margin-bottom: 1.5rem;
+}
+
+.date-input-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.date-input-container:hover {
+  background-color: #f3f4f6;
+}
+
+.date-input {
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: #4b5563;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+}
+
+.date-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  opacity: 0;
 }
 
 @media (max-width: 768px) {

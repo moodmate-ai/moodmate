@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './CalendarPage.css';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CalendarPageProps {
   isLoggedIn: boolean;
@@ -116,6 +117,15 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   
   const calendarGrid = generateCalendarGrid();
   
+  // 감정 타입 배열
+  const moodTypes = [
+    { type: 'happy', label: '행복' },
+    { type: 'sad', label: '슬픔' },
+    { type: 'anxious', label: '불안' },
+    { type: 'excited', label: '신남' },
+    { type: 'neutral', label: '보통' },
+  ];
+  
   return (
     <main className="calendar-content">
       {/* 달력 컨테이너 */}
@@ -124,24 +134,20 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
         <div className="calendar-header-controls">
           <button 
             onClick={prevMonth}
-            className="month-nav-button"
+            className="calendar-month-nav-button"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M15 18l-6-6 6-6"/>
-            </svg>
+            <ChevronLeft size={24} />
           </button>
           
-          <h2 className="current-month">
+          <h2 className="calendar-current-month">
             {months[currentMonth]} {currentYear}
           </h2>
           
           <button 
             onClick={nextMonth}
-            className="month-nav-button"
+            className="calendar-month-nav-button"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
+            <ChevronRight size={24} />
           </button>
         </div>
         
@@ -150,11 +156,8 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
           {/* 요일 헤더 */}
           {weekdays.map((day, index) => (
             <div 
-              key={index} 
-              className={`weekday-header ${
-                index === 0 ? 'sunday' : 
-                index === 6 ? 'saturday' : ''
-              }`}
+              key={day} 
+              className={`calendar-weekday-header ${index === 0 ? 'sunday' : ''} ${index === 6 ? 'saturday' : ''}`}
             >
               {day}
             </div>
@@ -173,9 +176,9 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
               >
                 {cell && (
                   <>
-                    <span className="day-number">{cell.day}</span>
+                    <div className="calendar-day-number">{cell.day}</div>
                     {cell.mood && (
-                      <span className="mood-emoji">{cell.mood.emoji}</span>
+                      <div className="calendar-mood-emoji">{cell.mood.emoji}</div>
                     )}
                   </>
                 )}
@@ -185,27 +188,13 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
         </div>
         
         {/* 감정 설명 */}
-        <div className="mood-legend">
-          <div className="legend-item">
-            <div className="legend-color happy"></div>
-            <span className="legend-text">행복</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color sad"></div>
-            <span className="legend-text">슬픔</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color anxious"></div>
-            <span className="legend-text">불안</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color excited"></div>
-            <span className="legend-text">신남</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color neutral"></div>
-            <span className="legend-text">보통</span>
-          </div>
+        <div className="calendar-mood-legend">
+          {moodTypes.map(mood => (
+            <div key={mood.type} className="calendar-legend-item">
+              <div className={`calendar-legend-color ${mood.type}`}></div>
+              <span className="calendar-legend-text">{mood.label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </main>

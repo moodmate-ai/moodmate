@@ -12,7 +12,9 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import './AnalysisPage.css';
+import './HistoryPage.css';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { ArrowLeft, BarChart2, TrendingUp, Brain, Heart } from 'lucide-react';
 
 ChartJS.register(
   CategoryScale,
@@ -25,7 +27,7 @@ ChartJS.register(
   Legend
 );
 
-const AnalysisPage: React.FC = () => {
+const HistoryPage: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -379,4 +381,4 @@ const AnalysisPage: React.FC = () => {
   );
 };
 
-export default AnalysisPage; 
+export default HistoryPage; 
