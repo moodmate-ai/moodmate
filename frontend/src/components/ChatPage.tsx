@@ -138,7 +138,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
           <MoreVertical size={20} />
         </button>
       </div>
-
+      
       <div className="chat-messages">
         {messages.length === 0 ? (
           <div className="welcome-message">
@@ -196,7 +196,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
         )}
         <div ref={messagesEndRef} />
       </div>
-
+      
       <div className="chat-input-container">
         <textarea
           ref={textareaRef}
@@ -207,15 +207,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
           placeholder="메시지를 입력하세요..."
           rows={1}
         />
-        <div className="chat-action-buttons">
-          <button className="action-button">
-            <Smile size={20} />
-          </button>
-          <button className="action-button">
-            <Paperclip size={20} />
-          </button>
-        </div>
-        <button
+        <button 
           className="send-button"
           onClick={handleSendMessage}
           disabled={!input.trim() || isThinking}

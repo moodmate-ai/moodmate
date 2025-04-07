@@ -66,8 +66,11 @@
   .message {
     display: flex;
     max-width: 80%;
+    min-width: 200px;
     align-items: flex-start;
     animation: fadeIn 0.3s ease-out;
+    margin: 0.5rem 0;
+    gap: 0.75rem;
   }
   
   .message.user {
@@ -77,19 +80,20 @@
   
   .message.assistant {
     align-self: flex-start;
+    flex-direction: row;
   }
   
   .message-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    margin: 0 0.75rem;
     object-fit: cover;
     border: 1px solid var(--border-color);
     background-color: white;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
   
   .message-avatar img {
@@ -109,9 +113,12 @@
     border-radius: 16px;
     font-size: 0.95rem;
     line-height: 1.5;
-    max-width: calc(100% - 80px);
+    max-width: calc(100% - 60px);
+    min-width: fit-content;
     overflow-wrap: break-word;
     word-break: break-word;
+    position: relative;
+    display: inline-block;
   }
   
   .user .message-content {
@@ -128,11 +135,7 @@
   }
   
   .timestamp {
-    font-size: 0.7rem;
-    margin-top: 0.25rem;
-    opacity: 0.7;
-    display: block;
-    text-align: right;
+    display: none;
   }
   
   .chat-input-container {

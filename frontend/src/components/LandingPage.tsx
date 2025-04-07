@@ -178,7 +178,7 @@ const LandingPage: React.FC = () => {
           더 건강한 정서적 웰빙을 위한 여정, MoodMate와 함께 시작해보세요
         </p>
         <button className="cta-button" onClick={() => navigate('/signup')}>
-          무료로 시작하기
+          시작하기
         </button>
       </section>
 

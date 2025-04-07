@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { 
   BarChart2, Calendar, BookOpen, MessageCircle, 
@@ -9,9 +9,10 @@ import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
 import CalendarPage from './components/CalendarPage';
 import DiaryPage from './components/DiaryPage';
-import AnalysisPage from './components/AnalysisPage';
+import HistoryPage from './components/HistoryPage';
 import ChatPage from './components/ChatPage';
 import LandingPage from './components/LandingPage';
+import DailyAnalysisPage from './components/DailyAnalysisPage';
 
 interface User {
   isLoggedIn: boolean;
@@ -21,19 +22,42 @@ interface User {
 
 // 메인 페이지 컴포넌트
 const MainPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'dashboard');
+
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
+
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'chat':
+        return <ChatPage />;
+      case 'calendar':
+        return <CalendarPage isLoggedIn={true} userName={''} onLogin={() => {}} onLogout={() => {}} />;
+      case 'diary':
+        return <DiaryPage isLoggedIn={true} userName={''} onLogin={() => {}} onLogout={() => {}} />;
+      case 'analysis':
+        return <DailyAnalysisPage />;
+      default:
+        return (
+          <div className="welcome-section">
+            <h1 className="welcome-title">WELCOME</h1>
+            <p className="welcome-subtitle">
+              Unleash the Power of Your Words.<br />
+              Discover the Depths of Your Emotions.
+            </p>
+          </div>
+        );
+    }
+  };
+
   return (
     <main className="main-content">
-      <div className="welcome-section">
-        <h1 className="welcome-title">WELCOME</h1>
-        <p className="welcome-subtitle">
-          Unleash the Power of Your Words.<br />
-          Discover the Depths of Your Emotions.
-        </p>
-      </div>
-      
-      <div className="background-image">
-        {/* 배경 이미지는 CSS에서 처리 */}
-      </div>
+      {renderContent()}
     </main>
   );
 };
@@ -236,7 +260,7 @@ function AppWrapper() {
       <Route path="/analysis" element={
         user.isLoggedIn ? (
           <Layout user={user} onLogout={handleLogout}>
-            <AnalysisPage />
+            <DailyAnalysisPage />
           </Layout>
         ) : (
           <Navigate to="/login" replace />
@@ -254,7 +278,7 @@ function AppWrapper() {
       <Route path="/history" element={
         user.isLoggedIn ? (
           <Layout user={user} onLogout={handleLogout}>
-            <ComingSoonPage title="History" />
+            <HistoryPage />
           </Layout>
         ) : (
           <Navigate to="/login" replace />

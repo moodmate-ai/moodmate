@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Image, BarChart2, Trash2, Edit3, Smile, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Image, BarChart2, Trash2, Edit3, Smile, Save, Calendar } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './DiaryPage.css';
 
 interface DiaryPageProps {
@@ -10,6 +11,7 @@ interface DiaryPageProps {
 }
 
 const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, onLogout }) => {
+  const navigate = useNavigate();
   // 상태 관리
   const [currentMonth, setCurrentMonth] = useState(10); // 11월 (0-indexed)
   const [currentYear, setCurrentYear] = useState(2025);
@@ -17,6 +19,8 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const [content, setContent] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [editingDiaryId, setEditingDiaryId] = useState<number | null>(null);
   
   // 월 이름 배열
   const months = [
@@ -136,26 +140,71 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
       return;
     }
 
-    const newEntry = {
-      id: diaryEntries.length + 1,
-      date: new Date().toISOString().split('T')[0],
-      day: ['일', '월', '화', '수', '목', '금', '토'][new Date().getDay()],
-      mood: currentMood,
-      moodEmoji: getMoodEmoji(currentMood),
-      content: content,
-      images: images,
-      growth: Math.floor(Math.random() * 30) + 70 // 임시로 70-100 사이의 랜덤 값
-    };
+    if (editingDiaryId) {
+      // 일기 수정 로직
+      const updatedEntries = diaryEntries.map(entry => 
+        entry.id === editingDiaryId 
+          ? {
+              ...entry,
+              date: selectedDate,
+              mood: currentMood,
+              content: content,
+              images: images
+            }
+          : entry
+      );
+      // 실제로는 API 호출로 서버에서 수정해야 함
+      console.log('일기가 수정되었습니다:', editingDiaryId);
+      setEditingDiaryId(null);
+    } else {
+      // 새 일기 작성 로직
+      const newEntry = {
+        id: diaryEntries.length + 1,
+        date: selectedDate,
+        day: ['일', '월', '화', '수', '목', '금', '토'][new Date(selectedDate).getDay()],
+        mood: currentMood,
+        moodEmoji: getMoodEmoji(currentMood),
+        content: content,
+        images: images,
+        growth: Math.floor(Math.random() * 30) + 70
+      };
+      // 실제로는 API 호출로 서버에서 저장해야 함
+      console.log('새로운 일기 저장:', newEntry);
+    }
 
-    // 여기에 실제 저장 로직 추가 (API 호출 등)
-    console.log('새로운 일기 저장:', newEntry);
-    
     // 상태 초기화
     setContent('');
     setImages([]);
     setCurrentMood('neutral');
+    setSelectedDate(new Date().toISOString().split('T')[0]);
     
-    alert('일기가 저장되었습니다!');
+    alert(editingDiaryId ? '일기가 수정되었습니다!' : '일기가 저장되었습니다!');
+  };
+
+  // 분석 페이지로 이동
+  const handleAnalysis = (diary: any) => {
+    navigate('/analysis', { state: { diary } });
+  };
+
+  const handleEdit = (diaryId: number) => {
+    const diaryToEdit = diaryEntries.find(d => d.id === diaryId);
+    if (diaryToEdit) {
+      setSelectedDate(diaryToEdit.date);
+      setCurrentMood(diaryToEdit.mood);
+      setContent(diaryToEdit.content);
+      setImages(diaryToEdit.images);
+      // 수정 중인 일기 ID 저장
+      setEditingDiaryId(diaryId);
+    }
+  };
+
+  const handleDelete = (diaryId: number) => {
+    if (window.confirm('정말로 이 일기를 삭제하시겠습니까?')) {
+      // 일기 삭제 로직 구현
+      const updatedEntries = diaryEntries.filter(d => d.id !== diaryId);
+      // 실제로는 API 호출로 서버에서 삭제해야 함
+      console.log('일기가 삭제되었습니다:', diaryId);
+    }
   };
 
   return (
@@ -191,12 +240,18 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                   <Smile size={28} />
                 </div>
                 <div>
-                  <h3>새 일기 작성하기</h3>
-                  <p>오늘의 기분과 생각을 기록해보세요</p>
+                  <h3>{editingDiaryId ? '일기 수정하기' : '새 일기 작성하기'}</h3>
+                  <p>{editingDiaryId ? '일기를 수정해보세요' : '오늘의 기분과 생각을 기록해보세요'}</p>
                 </div>
               </div>
-              <div className="diary-date">
-                {formatDate(new Date().toISOString().split('T')[0])}
+              <div className="date-input-container">
+                <Calendar size={16} />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="date-input"
+                />
               </div>
             </div>
             
@@ -260,7 +315,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
               <div className="save-button-container">
                 <button className="save-button" onClick={handleSave}>
                   <Save size={20} />
-                  <span>저장하기</span>
+                  <span>{editingDiaryId ? '수정하기' : '저장하기'}</span>
                 </button>
               </div>
             </div>
@@ -313,13 +368,22 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                   </div>
                   
                   <div className="diary-actions">
-                    <button className="action-button">
+                    <button 
+                      className="action-button"
+                      onClick={() => handleAnalysis(entry)}
+                    >
                       <BarChart2 size={18} />
                     </button>
-                    <button className="action-button">
+                    <button 
+                      className="action-button"
+                      onClick={() => handleEdit(entry.id)}
+                    >
                       <Edit3 size={18} />
                     </button>
-                    <button className="action-button delete">
+                    <button 
+                      className="action-button delete"
+                      onClick={() => handleDelete(entry.id)}
+                    >
                       <Trash2 size={18} />
                     </button>
                   </div>
