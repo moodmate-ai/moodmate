@@ -13,6 +13,7 @@ import HistoryPage from './components/HistoryPage';
 import ChatPage from './components/ChatPage';
 import LandingPage from './components/LandingPage';
 import DailyAnalysisPage from './components/DailyAnalysisPage';
+import DashboardPage from './components/DashboardPage';
 
 interface User {
   isLoggedIn: boolean;
@@ -21,7 +22,7 @@ interface User {
 }
 
 // 메인 페이지 컴포넌트
-const MainPage: React.FC = () => {
+const MainPage: React.FC<{ user: User }> = ({ user }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'dashboard');
@@ -34,12 +35,14 @@ const MainPage: React.FC = () => {
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'dashboard':
+        return <DashboardPage userName={user.name || '사용자'} profileImage={user.profileImage} />;
       case 'chat':
         return <ChatPage />;
       case 'calendar':
-        return <CalendarPage isLoggedIn={true} userName={''} onLogin={() => {}} onLogout={() => {}} />;
+        return <CalendarPage isLoggedIn={true} userName={user.name || ''} onLogin={() => {}} onLogout={() => {}} />;
       case 'diary':
-        return <DiaryPage isLoggedIn={true} userName={''} onLogin={() => {}} onLogout={() => {}} />;
+        return <DiaryPage isLoggedIn={true} userName={user.name || ''} onLogin={() => {}} onLogout={() => {}} />;
       case 'analysis':
         return <DailyAnalysisPage />;
       default:
@@ -139,8 +142,10 @@ const Layout: React.FC<{
           </div>
         </div>
         <div className="user-profile">
-          <img src={user?.profileImage || '/default-profile.png'} alt="Profile" className="profile-image" />
-          <span className="user-name">{user?.name || '사용자'}</span>
+          <div className="profile-image-container">
+            <img src={user?.profileImage || '/default-profile.png'} alt="Profile" className="profile-image" />
+          </div>
+          <span className="profile-name">{user?.name || '사용자'}</span>
         </div>
         <div className="sidebar-menu">
           {menuItems.map((item) => (
@@ -224,7 +229,7 @@ function AppWrapper() {
       <Route path="/" element={
         user.isLoggedIn ? (
           <Layout user={user} onLogout={handleLogout}>
-            <MainPage />
+            <MainPage user={user} />
           </Layout>
         ) : (
           <LandingPage />
@@ -233,7 +238,7 @@ function AppWrapper() {
       <Route path="/dashboard" element={
         user.isLoggedIn ? (
           <Layout user={user} onLogout={handleLogout}>
-            <MainPage />
+            <MainPage user={user} />
           </Layout>
         ) : (
           <Navigate to="/login" replace />
