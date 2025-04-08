@@ -21,9 +21,7 @@ services:
     depends_on:
       - postgres
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/moodmate
-      SPRING_DATASOURCE_USERNAME: moodmate
+      SPRING_PROFILES_ACTIVE: dev
 
 volumes:
   postgres-data:
-      
