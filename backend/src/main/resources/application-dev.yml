@@ -31,9 +31,14 @@ springdoc:
   api-docs:
     enabled: ${API_DOCS_ENABLED:true}
     path: /api-docs
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
   swagger-ui:
-    enabled: ${SWAGGER_ENABLED:true}
     operationsSorter: alpha
     tagsSorter: alpha
-    path: ${SWAGGER_PATH:/swagger-ui}
+    path: /
+    disableSwaggerDefaultUrl: false
+    docExpansion: list
+  paths-to-match:
+  - /api/**
   show-actuator: true
