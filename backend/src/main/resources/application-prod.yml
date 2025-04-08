@@ -9,16 +9,11 @@ server:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   datasource:
     url: jdbc:postgresql://postgres:5432/moodmate
     username: moodmate
     password: moodmate
-  devtools:
-    livereload:
-      enabled: true
-    restart:
-      enabled: true
   jpa:
     show-sql: true
     database: postgresql
@@ -26,14 +21,3 @@ spring:
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       ddl-auto: update
-    
-springdoc:
-  api-docs:
-    enabled: ${API_DOCS_ENABLED:true}
-    path: /api-docs
-  swagger-ui:
-    enabled: ${SWAGGER_ENABLED:true}
-    operationsSorter: alpha
-    tagsSorter: alpha
-    path: ${SWAGGER_PATH:/swagger-ui}
-  show-actuator: true
