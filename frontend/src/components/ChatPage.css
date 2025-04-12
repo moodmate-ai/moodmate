@@ -9,10 +9,9 @@
   
   .chat-header {
     display: flex;
+    justify-content: center;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-color);
   }
   
@@ -349,3 +348,463 @@
       padding: 1.5rem;
     }
   }
+  
+  .date-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+  }
+  
+  .date-picker-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .date-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  .date-selector-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 200px;
+    justify-content: center;
+  }
+  
+  .date-selector-button:hover {
+    background-color: var(--hover-color);
+    border-color: var(--primary-color);
+  }
+  
+  .date-selector-button span {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .date-nav-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .date-nav-button:hover {
+    background-color: var(--hover-color);
+    border-color: var(--primary-color);
+  }
+  
+  .date-picker-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+  
+  .date-picker {
+    background-color: white;
+    border-radius: 1rem;
+    padding: 1rem;
+    width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .date-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+  }
+  
+  .date-picker-header button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+  
+  .date-picker-header button:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .date-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.5rem;
+  }
+  
+  .date-picker-weekday {
+    text-align: center;
+    font-weight: 500;
+    color: #6b7280;
+    padding: 0.5rem;
+    width: 100%;
+  }
+  
+  .date-picker-day {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .date-picker-day:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .date-picker-day.selected {
+    background-color: #bbf7d0;
+    color: #166534;
+  }
+  
+  .date-picker-day.today {
+    font-weight: bold;
+    color: #166534;
+  }
+  
+  .date-picker-day.other-month {
+    color: #9ca3af;
+  }
+  
+  .date-picker-day.other-month:hover {
+    background-color: #f3f4f6;
+  }
+
+.analysis-section {
+  position: sticky;
+  top: 20px;
+  z-index: 9;
+  background-color: var(--card-background);
+  border-radius: 1rem;
+  margin: 0.5rem;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.analysis-section.collapsed {
+  max-height: 60px;
+  overflow: hidden;
+}
+
+.analysis-section.expanded {
+  max-height: 1000px;
+}
+
+.analysis-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background-color: white;
+  border-radius: 1rem 1rem 0 0;
+  min-height: 48px;
+}
+
+.analysis-preview .mood-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.analysis-preview .mood-text {
+  font-size: 1rem;
+  color: #1f2937;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.expand-icon {
+  transition: transform 0.3s ease;
+  color: #6b7280;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expand-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.mood-details {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.sentiment-tag {
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.sentiment-tag.positive {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.sentiment-tag.neutral {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.sentiment-tag.negative {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.analysis-content {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  background-color: #f9fafb;
+  border-radius: 0 0 1rem 1rem;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.analysis-card {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 400px;
+  border: 1px solid var(--border-color);
+  position: relative;
+  z-index: 1;
+}
+
+.analysis-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+}
+
+.analysis-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: -1;
+}
+
+.analysis-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.05));
+  border-radius: 0 0 1rem 1rem;
+  pointer-events: none;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-header h2 {
+  font-size: 1.5rem;
+  color: #1f2937;
+  margin: 0;
+  font-weight: 600;
+}
+
+.mood-description {
+  color: #4b5563;
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.mood-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+
+.sentiment-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+.sentiment-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.bar-label {
+  width: 100px;
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.bar-container {
+  flex: 1;
+  height: 10px;
+  background-color: #e5e7eb;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  background-color: #16a34a;
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.bar-value {
+  width: 60px;
+  font-size: 1rem;
+  color: #4b5563;
+  text-align: right;
+}
+
+.emotion-circles {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 2rem;
+  padding: 2rem 0;
+}
+
+.emotion-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.circle {
+  border-radius: 50%;
+  background-color: rgba(22, 163, 74, 0.2);
+  transition: all 0.3s ease;
+}
+
+.emotion-label {
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.emotion-value {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.keyword-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.keyword-tag {
+  padding: 0.75rem 1.25rem;
+  background-color: #f3f4f6;
+  border-radius: 1.5rem;
+  font-size: 1rem;
+  color: #4b5563;
+  transition: all 0.2s ease;
+}
+
+.keyword-tag:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .analysis-section {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    margin: 1.5rem;
+  }
+  
+  .analysis-card {
+    padding: 1.5rem;
+    min-width: unset;
+  }
+}
+
+.start-chat-button {
+  background-color: #22c55e;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s ease;
+  width: 100%;
+  border: none;
+  font-size: 1rem;
+}
+
+.start-chat-button:hover {
+  background-color: #16a34a;
+  transform: translateY(-2px);
+}
