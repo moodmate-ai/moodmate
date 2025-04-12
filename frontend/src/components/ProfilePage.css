@@ -145,6 +145,7 @@
     border-radius: 8px;
     font-size: 1rem;
     transition: all 0.2s ease;
+    color: var(--text-primary);
   }
   
   .field-input:focus {
@@ -480,5 +481,9 @@
 [data-theme="dark"] .field-label,
 [data-theme="dark"] .theme-text h3,
 [data-theme="dark"] .theme-text p {
+  color: #000000;
+}
+
+[data-theme="dark"] .field-input {
   color: #000000;
 }
