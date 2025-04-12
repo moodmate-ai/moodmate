@@ -16,7 +16,7 @@ const LandingPage: React.FC = () => {
       {/* 네비게이션 */}
       <nav className="landing-nav">
         <div className="logo">
-          <img src="/logo.png" alt="MoodMate Logo" className="nav-logo" />
+          <img src="/moodmate.png" alt="MoodMate Logo" className="nav-logo" />
           <h1>MoodMate</h1>
         </div>
         <div className="nav-buttons">
@@ -186,7 +186,7 @@ const LandingPage: React.FC = () => {
       <footer className="landing-footer">
         <div className="footer-content">
           <div className="footer-logo">
-            <img src="/logo.png" alt="MoodMate Logo" className="footer-logo-img" />
+            <img src="/moodmate.png" alt="MoodMate Logo" className="footer-logo-img" />
             <h3>MoodMate</h3>
           </div>
           <p className="footer-copyright">© 2025 MoodMate. All rights reserved.</p>

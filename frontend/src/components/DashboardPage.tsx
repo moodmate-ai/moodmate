@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart2, Calendar, BookOpen, MessageCircle, TrendingUp, Activity } from 'lucide-react';
+import { BarChart2, Calendar, BookOpen, MessageCircle, TrendingUp, Activity, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './DashboardPage.css';
 
@@ -130,13 +130,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
               <Calendar size={24} />
               <span>캘린더 보기</span>
             </Link>
-            <Link to="/analysis" className="quick-action-button">
-              <BarChart2 size={24} />
-              <span>분석 확인</span>
-            </Link>
             <Link to="/chats" className="quick-action-button">
               <MessageCircle size={24} />
               <span>AI와 대화</span>
+            </Link>
+            <Link to="/history" className="quick-action-button">
+              <Clock size={24} />
+              <span>기록 확인</span>
             </Link>
           </div>
         </div>
