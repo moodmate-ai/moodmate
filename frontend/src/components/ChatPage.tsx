@@ -48,6 +48,25 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
     }
   }, [location.state?.date]);
 
+  // 일기 데이터가 전달된 경우 초기 AI 메시지 설정
+  useEffect(() => {
+    if (location.state?.diary) {
+      const diary = location.state.diary;
+      const initialMessage: Message = {
+        id: Date.now().toString(),
+        content: diary.mood === 'happy' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
+                diary.mood === 'sad' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
+                diary.mood === 'angry' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
+                diary.mood === 'anxious' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
+                '오늘 하루는 어떠셨나요? 함께 이야기를 나눠볼까요?',
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages([initialMessage]);
+      setShowAnalysis(false);
+    }
+  }, [location.state?.diary]);
+
   // Suggested prompts for the welcome screen
   const suggestedPrompts = [
     "오늘 기분이 좋지 않아요",
@@ -75,7 +94,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   };
 
   const handleSendMessage = () => {
-    if (!input.trim()) return;
+    if (!input.trim() || isThinking) return;
 
     // Add user message
     const userMessage: Message = {
@@ -127,7 +146,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isThinking) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -437,23 +456,33 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
             </p>
           </div>
         ) : (
-          messages.map((message) => (
-            <div key={message.id} className={`message ${message.sender}`}>
-              <div className={`message-avatar ${message.sender}`}>
-                {message.sender === 'user' ? (
-                  <img src={profileImage} alt="User" />
-                ) : (
-                  <Bot size={24} />
-                )}
-              </div>
-              <div>
-                <div className="message-content">
-                  {message.content}
-                  <span className="timestamp">{formatTime(message.timestamp)}</span>
+          <>
+            <div className="welcome-message">
+              <div className="icon">🤖</div>
+              <h2>MoodMate 챗봇에 오신 것을 환영합니다!</h2>
+              <p>
+                안녕하세요, {userName}님! 저는 여러분의 감정적 웰빙을 돕기 위해 여기 있어요.
+                기분이 어떠신지 알려주시거나, 감정에 대해 이야기하거나, 마음 관리에 대한 조언을 구해보세요.
+              </p>
+            </div>
+            {messages.map((message) => (
+              <div key={message.id} className={`message ${message.sender}`}>
+                <div className={`message-avatar ${message.sender}`}>
+                  {message.sender === 'user' ? (
+                    <img src={profileImage} alt="User" />
+                  ) : (
+                    <Bot size={24} />
+                  )}
+                </div>
+                <div>
+                  <div className="message-content">
+                    {message.content}
+                    <span className="timestamp">{formatTime(message.timestamp)}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </>
         )}
 
         {isThinking && (
@@ -473,24 +502,26 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
         <div ref={messagesEndRef} />
       </div>
       
-      <div className="chat-input-container">
-        <textarea
-          ref={textareaRef}
-          className="chat-input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="메시지를 입력하세요..."
-          rows={1}
-        />
-        <button 
-          className="send-button"
-          onClick={handleSendMessage}
-          disabled={!input.trim() || isThinking}
-        >
-          <Send size={18} />
-        </button>
-      </div>
+      {!showAnalysis && (
+        <div className="chat-input-container">
+          <textarea
+            ref={textareaRef}
+            className="chat-input"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={isThinking ? "AI가 답변을 준비중입니다..." : "메시지를 입력하세요..."}
+            rows={1}
+          />
+          <button 
+            className="send-button"
+            onClick={handleSendMessage}
+            disabled={!input.trim() || isThinking}
+          >
+            <Send size={18} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

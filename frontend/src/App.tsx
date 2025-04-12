@@ -13,6 +13,7 @@ import HistoryPage from './components/HistoryPage';
 import ChatPage from './components/ChatPage';
 import LandingPage from './components/LandingPage';
 import DashboardPage from './components/DashboardPage';
+import ProfilePage from './components/ProfilePage';
 import { AuthProvider } from './contexts/AuthContext';
 import { DiaryProvider } from './contexts/DiaryContext';
 
@@ -128,7 +129,7 @@ const Layout: React.FC<{
             <img src="/moodmate.png" alt="MoodMate Logo" className="logo-image" />
           </div>
         </div>
-        <div className="user-profile">
+        <div className="user-profile" onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
           <div className="profile-image-container">
             <img src={user?.profileImage || '/default-profile.png'} alt="Profile" className="profile-image" />
           </div>
@@ -166,7 +167,16 @@ function AppWrapper() {
     name: '홍길동',
     profileImage: 'https://via.placeholder.com/150'
   });
+  const [theme, setTheme] = useState('light');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+  };
 
   const handleLogin = (username: string, password: string) => {
     // 실제 로그인 로직은 여기에 구현
@@ -209,6 +219,14 @@ function AppWrapper() {
       isLoggedIn: false
     });
     navigate('/');
+  };
+
+  const handleUpdateProfile = (name: string, profileImage: string) => {
+    setUser(prev => ({
+      ...prev,
+      name,
+      profileImage
+    }));
   };
 
   return (
@@ -283,6 +301,19 @@ function AppWrapper() {
               <SignupPage onSignup={handleSignup} onGoogleSignup={handleGoogleSignup} />
             )
           } />
+          <Route 
+            path="/profile" 
+            element={
+              <Layout user={user} onLogout={handleLogout}>
+                <ProfilePage 
+                  userName={user.name || ''} 
+                  profileImage={user.profileImage || ''} 
+                  onUpdateProfile={handleUpdateProfile}
+                  onThemeChange={handleThemeChange}
+                />
+              </Layout>
+            } 
+          />
         </Routes>
       </DiaryProvider>
     </AuthProvider>

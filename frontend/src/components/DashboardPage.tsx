@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart2, Calendar, BookOpen, MessageCircle, TrendingUp, Activity, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useDiary } from '../contexts/DiaryContext';
+import { Diary } from '../types/Diary';
 import './DashboardPage.css';
 
 interface DashboardPageProps {
@@ -11,24 +13,13 @@ interface DashboardPageProps {
 const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [greeting, setGreeting] = useState('');
+  const navigate = useNavigate();
+  const { diaries } = useDiary();
   
-  // 최근 일기 데이터 (예시)
-  const recentDiaries = [
-    {
-      id: 1,
-      date: '2025-11-01',
-      mood: 'neutral',
-      moodEmoji: '😌',
-      content: '오늘 하루는 맑고 반짝인 시집텨서 기분이 좋았다. 사실에는 따뜻한 차를 마시면서 일했고...',
-    },
-    {
-      id: 2,
-      date: '2025-11-02',
-      mood: 'happy',
-      moodEmoji: '😊',
-      content: '아침에 일어나자 날씨가 정말좋을 때, 맑고 푸른 하늘을 보고 기분이 좋았다. 바람도 시원하게 불고...',
-    }
-  ];
+  // 최근 일기 3개 가져오기
+  const recentDiaries = diaries
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
 
   // 감정 통계 데이터 (예시)
   const moodStats = [
@@ -72,6 +63,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleDiaryClick = (diary: Diary) => {
+    navigate('/diary', { state: { selectedDate: diary.date } });
   };
 
   return (
@@ -151,12 +146,20 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
           </div>
           <div className="recent-entries">
             {recentDiaries.map((diary) => (
-              <div key={diary.id} className="recent-entry">
+              <div 
+                key={diary.id} 
+                className="recent-entry"
+                onClick={() => handleDiaryClick(diary)}
+              >
                 <div className="entry-date-mood">
                   <div className="entry-date">{formatShortDate(diary.date)}</div>
                   <div className="entry-mood">{diary.moodEmoji}</div>
                 </div>
-                <div className="entry-content">{diary.content}</div>
+                <div className="entry-content">
+                  {diary.content.length > 100 
+                    ? `${diary.content.substring(0, 100)}...` 
+                    : diary.content}
+                </div>
               </div>
             ))}
           </div>
