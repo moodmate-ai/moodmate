@@ -14,7 +14,7 @@
 .calendar-container {
   width: 100%;
   max-width: 1000px;
-  background: rgba(255, 255, 255, 0.9);
+  background: var(--card-background);
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -357,7 +357,7 @@
 }
 
 .diary-card {
-  background: white;
+  background: var(--card-background);
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;

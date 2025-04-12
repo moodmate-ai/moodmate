@@ -33,7 +33,7 @@
 
 /* 탭 내비게이션 */
 .tabs-container {
-  background-color: white;
+  background-color: var(--card-background);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   margin-bottom: 24px;
@@ -73,7 +73,7 @@
 
 /* 차트 카드 */
 .chart-card {
-  background-color: white;
+  background-color: var(--card-background);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   margin-bottom: 24px;
@@ -150,7 +150,7 @@
 }
 
 .insight-card {
-  background-color: white;
+  background-color: var(--card-background);
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -193,7 +193,7 @@
 }
 
 .patterns-card {
-  background-color: white;
+  background-color: var(--card-background);
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   padding: 24px;
