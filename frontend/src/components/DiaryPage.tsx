@@ -148,12 +148,8 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
     if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
     
     const diffInHours = Math.floor(diffInMinutes / 60);
-    const remainingMinutes = diffInMinutes % 60;
-    
     if (diffInHours < 24) {
-      return remainingMinutes > 0 
-        ? `${diffInHours}시간 ${remainingMinutes}분 전`
-        : `${diffInHours}시간 전`;
+      return `${diffInHours}시간 전`;
     }
     
     const diffInDays = Math.floor(diffInHours / 24);

@@ -106,12 +106,20 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   
   // 날짜 포맷팅
   const formatDate = (date: string) => {
+    const now = new Date();
     const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][d.getDay()];
-    return `${year}.${month}.${day} ${dayOfWeek}`;
+    const diffInMinutes = Math.floor((now.getTime() - d.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return '방금 전';
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours}시간 전`;
+    }
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}일 전`;
   };
   
   // 이전 달로 이동
