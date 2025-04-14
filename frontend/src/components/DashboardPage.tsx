@@ -58,11 +58,20 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
 
   // 간략한 날짜 포맷
   const formatShortDate = (dateString: string) => {
+    const now = new Date();
     const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
-      month: 'short',
-      day: 'numeric'
-    });
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return '방금 전';
+    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours}시간 전`;
+    }
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}일 전`;
   };
 
   const handleDiaryClick = (diary: Diary) => {
