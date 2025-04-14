@@ -233,7 +233,7 @@
   .thinking-dot {
     width: 0.5rem;
     height: 0.5rem;
-    background-color: var(--text-secondary);
+    background-color: #000000;
     border-radius: 50%;
     animation: pulse 1.5s infinite;
   }
@@ -811,4 +811,69 @@
 .start-chat-button:hover {
   background-color: #16a34a;
   transform: translateY(-2px);
+}
+
+[data-theme="dark"] .chat-title {
+  color: #000000;
+}
+
+[data-theme="dark"] .chat-options-button {
+  color: #000000;
+}
+
+[data-theme="dark"] .assistant .message-content {
+  color: #000000;
+}
+
+[data-theme="dark"] .chat-input {
+  color: #000000;
+}
+
+[data-theme="dark"] .chat-input::placeholder {
+  color: #000000;
+  opacity: 0.7;
+}
+
+[data-theme="dark"] .welcome-message p {
+  color: #000000;
+}
+
+[data-theme="dark"] .suggested-prompt {
+  color: #000000;
+}
+
+[data-theme="dark"] .analysis-preview .mood-text {
+  color: #000000;
+}
+
+[data-theme="dark"] .card-header h2 {
+  color: #000000;
+}
+
+[data-theme="dark"] .mood-description {
+  color: #000000;
+}
+
+[data-theme="dark"] .bar-label {
+  color: #000000;
+}
+
+[data-theme="dark"] .bar-value {
+  color: #000000;
+}
+
+[data-theme="dark"] .emotion-label {
+  color: #000000;
+}
+
+[data-theme="dark"] .emotion-value {
+  color: #000000;
+}
+
+[data-theme="dark"] .keyword-tag {
+  color: #000000;
+}
+
+[data-theme="dark"] .thinking-dot {
+  background-color: #000000;
 }
