@@ -29,16 +29,15 @@ spring:
     
 springdoc:
   api-docs:
-    enabled: ${API_DOCS_ENABLED:true}
+    enabled: true
     path: /api-docs
-  default-consumes-media-type: application/json
-  default-produces-media-type: application/json
   swagger-ui:
     operationsSorter: alpha
     tagsSorter: alpha
-    path: /
+    path: /swagger-ui
     disableSwaggerDefaultUrl: false
     docExpansion: list
   paths-to-match:
-  - /api/**
+  - /user/**
+  - /diary/**
   show-actuator: true
