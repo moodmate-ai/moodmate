@@ -294,6 +294,16 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     );
   });
 
+  // 오늘 날짜 확인 함수
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   return (
     <main className="calendar-content">
       {/* 달력 컨테이너 */}
@@ -400,7 +410,9 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
                   key={`${rowIndex}-${cellIndex}`} 
                   className={`calendar-cell ${
                     cell.isCurrentMonth ? '' : 'other-month'
-                  } ${hasDiary ? 'has-diary' : ''} ${diary ? diary.mood : ''}`}
+                  } ${hasDiary ? 'has-diary' : ''} ${diary ? diary.mood : ''} ${
+                    isToday(date) ? 'today' : ''
+                  }`}
                   onClick={() => handleDateClick(date)}
                 >
                   {cell && (

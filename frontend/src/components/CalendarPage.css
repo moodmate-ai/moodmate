@@ -175,6 +175,23 @@
   opacity: 0.5;
 }
 
+.calendar-cell.today .calendar-day-number {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.calendar-cell.today .calendar-day-number::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+}
+
 .calendar-day-number {
   font-size: 0.875rem;
   color: #2c3e50;

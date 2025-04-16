@@ -109,15 +109,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                 placeholder="이름을 입력하세요"
               />
             </div>
-            <div className="actions">
-              <button 
-                className="save-button"
-                onClick={handleSave}
-              >
-                <Save size={16} />
-                저장하기
-              </button>
-            </div>
           </div>
         </div>
         
@@ -153,17 +144,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                 <p>어두운 배경과 밝은 텍스트로 표시됩니다</p>
               </div>
             </div>
-            <div className="actions">
-              <button 
-                className="save-button"
-                onClick={handleSave}
-              >
-                <Save size={16} />
-                저장하기
-              </button>
-            </div>
           </div>
         </div>
+
+        <button 
+          className="save-button"
+          onClick={handleSave}
+        >
+          <Save size={16} />
+          저장하기
+        </button>
         
         <div className="danger-section">
           <h2 className="danger-title">계정 삭제</h2>
