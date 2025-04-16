@@ -134,12 +134,12 @@
   background-color: #bfdbfe;
 }
 
-.calendar-cell.anxious {
-  background-color: #e9d8fd;
+.calendar-cell.angry {
+  background-color: #fee2e2;
 }
 
-.calendar-cell.excited {
-  background-color: #fed7aa;
+.calendar-cell.anxious {
+  background-color: #e9d8fd;
 }
 
 .calendar-cell.neutral {
@@ -154,16 +154,16 @@
   background-color: #93c5fd;
 }
 
-.calendar-cell.anxious:hover {
-  background-color: #86efac;
+.calendar-cell.angry:hover {
+  background-color: #fecaca;
 }
 
-.calendar-cell.excited:hover {
-  background-color: #fdba74;
+.calendar-cell.anxious:hover {
+  background-color: #d8b4fe;
 }
 
 .calendar-cell.neutral:hover {
-  background-color: #d1d5db;
+  background-color: #86efac;
 }
 
 .calendar-cell.other-month .calendar-day-number {
@@ -220,12 +220,12 @@
   background-color: #bfdbfe;
 }
 
-.calendar-legend-color.anxious {
-  background-color: #e9d8fd;
+.calendar-legend-color.angry {
+  background-color: #fee2e2;
 }
 
-.calendar-legend-color.excited {
-  background-color: #fed7aa;
+.calendar-legend-color.anxious {
+  background-color: #e9d8fd;
 }
 
 .calendar-legend-color.neutral {
