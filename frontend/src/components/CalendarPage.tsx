@@ -80,14 +80,23 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     '2025-4-17': { mood: 'neutral', emoji: '😐' },
   };
   
+  // 감정 타입 배열
+  const moodTypes = [
+    { type: 'happy', label: '행복', emoji: '😊' },
+    { type: 'sad', label: '슬픔', emoji: '😢' },
+    { type: 'angry', label: '화남', emoji: '😠' },
+    { type: 'anxious', label: '불안', emoji: '😰' },
+    { type: 'neutral', label: '보통', emoji: '😌' }
+  ];
+
   // 감정에 따른 배경색 반환
   const getMoodColor = (mood: string) => {
     switch(mood) {
       case 'happy': return 'happy';
       case 'sad': return 'sad';
       case 'angry': return 'angry';
-      case 'neutral': return 'neutral';
       case 'anxious': return 'anxious';
+      case 'neutral': return 'neutral';
       default: return 'neutral';
     }
   };
@@ -98,8 +107,8 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
       case 'happy': return '😊';
       case 'sad': return '😢';
       case 'angry': return '😠';
-      case 'neutral': return '😌';
       case 'anxious': return '😰';
+      case 'neutral': return '😌';
       default: return '😐';
     }
   };
@@ -193,15 +202,6 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   
   const calendarGrid = generateCalendarGrid();
   
-  // 감정 타입 배열
-  const moodTypes = [
-    { type: 'happy', label: '행복' },
-    { type: 'sad', label: '슬픔' },
-    { type: 'anxious', label: '불안' },
-    { type: 'excited', label: '신남' },
-    { type: 'neutral', label: '보통' },
-  ];
-
   // 일기 분석 페이지로 이동
   const handleAnalysis = (diary: any) => {
     // 분석 페이지로 이동하는 로직

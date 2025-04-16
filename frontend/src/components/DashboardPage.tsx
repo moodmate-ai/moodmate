@@ -13,6 +13,7 @@ interface DashboardPageProps {
 const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [greeting, setGreeting] = useState('');
+  const [streakCount, setStreakCount] = useState(0);
   const navigate = useNavigate();
   const { diaries } = useDiary();
   
@@ -45,6 +46,50 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
     
     setGreeting(newGreeting);
   }, [currentDate]);
+
+  // 연속 작성 일수 계산
+  useEffect(() => {
+    if (diaries.length === 0) {
+      setStreakCount(0);
+      return;
+    }
+
+    // 일기를 날짜순으로 정렬
+    const sortedDiaries = [...diaries].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+
+    let currentStreak = 0;
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    // 오늘 일기를 작성했는지 확인
+    const hasTodayDiary = sortedDiaries.some(diary => {
+      const diaryDate = new Date(diary.date);
+      diaryDate.setHours(0, 0, 0, 0);
+      return diaryDate.getTime() === currentDate.getTime();
+    });
+
+    if (hasTodayDiary) {
+      currentStreak = 1;
+      currentDate.setDate(currentDate.getDate() - 1);
+    }
+
+    // 과거 일기들을 확인하면서 연속 작성 일수를 계산
+    for (let i = sortedDiaries.length - 1; i >= 0; i--) {
+      const diaryDate = new Date(sortedDiaries[i].date);
+      diaryDate.setHours(0, 0, 0, 0);
+
+      if (diaryDate.getTime() === currentDate.getTime()) {
+        currentStreak++;
+        currentDate.setDate(currentDate.getDate() - 1);
+      } else if (diaryDate.getTime() < currentDate.getTime()) {
+        break;
+      }
+    }
+
+    setStreakCount(currentStreak);
+  }, [diaries]);
 
   // 날짜 포맷팅
   const formatDate = (date: Date) => {
@@ -87,7 +132,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
         </div>
         <div className="profile-summary">
           <div className="streak-info">
-            <div className="streak-count">7일</div>
+            <div className="streak-count">{streakCount}일</div>
             <div className="streak-label">연속 기록</div>
           </div>
         </div>
