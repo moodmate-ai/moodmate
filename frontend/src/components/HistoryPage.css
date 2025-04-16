@@ -15,7 +15,7 @@
 .month-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-color, #000000);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -36,15 +36,15 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #ffffff;
+  background-color: var(--button-background, white);
+  border: 1px solid var(--button-border, #e5e7eb);
+  color: var(--text-color, #000000);
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .month-button:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--button-hover, #f3f4f6);
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -53,6 +53,21 @@
   width: 20px;
   height: 20px;
   stroke-width: 2;
+}
+
+/* 다크모드 스타일 */
+[data-theme="dark"] .month-title {
+  color: #ffffff;
+}
+
+[data-theme="dark"] .month-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .month-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
 .date-picker-overlay {
