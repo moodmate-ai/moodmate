@@ -30,6 +30,8 @@ ChartJS.register(
 const HistoryPage: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activeTab, setActiveTab] = useState('overview');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [datePickerDate, setDatePickerDate] = useState(new Date());
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
@@ -37,6 +39,16 @@ const HistoryPage: React.FC = () => {
 
   const handleNextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+  };
+
+  const handleDatePickerClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDatePicker(!showDatePicker);
+  };
+
+  const handleDatePickerChange = (date: Date) => {
+    setCurrentDate(date);
+    setShowDatePicker(false);
   };
 
   const formatDate = (date: Date) => {
@@ -221,11 +233,51 @@ const HistoryPage: React.FC = () => {
         <button className="month-button" onClick={handlePrevMonth}>
           <FaChevronLeft />
         </button>
-        <h2 className="month-title">{formatDate(currentDate)}</h2>
+        <h2 className="month-title" onClick={handleDatePickerClick}>
+          {formatDate(currentDate)}
+        </h2>
         <button className="month-button" onClick={handleNextMonth}>
           <FaChevronRight />
         </button>
       </div>
+
+      {showDatePicker && (
+        <div className="date-picker-overlay" onClick={() => setShowDatePicker(false)}>
+          <div className="date-picker" onClick={e => e.stopPropagation()}>
+            <div className="date-picker-header">
+              <button onClick={() => {
+                setDatePickerDate(new Date(datePickerDate.getFullYear() - 1, datePickerDate.getMonth()));
+              }}>
+                <FaChevronLeft />
+              </button>
+              <span>{datePickerDate.getFullYear()}년</span>
+              <button onClick={() => {
+                setDatePickerDate(new Date(datePickerDate.getFullYear() + 1, datePickerDate.getMonth()));
+              }}>
+                <FaChevronRight />
+              </button>
+            </div>
+            <div className="date-picker-grid">
+              {Array.from({ length: 12 }, (_, i) => {
+                const date = new Date(datePickerDate.getFullYear(), i, 1);
+                const isCurrentMonth = date.getMonth() === currentDate.getMonth();
+                return (
+                  <button
+                    key={date.toString()}
+                    className={`date-picker-day ${isCurrentMonth ? 'selected' : ''}`}
+                    onClick={() => {
+                      setCurrentDate(date);
+                      setShowDatePicker(false);
+                    }}
+                  >
+                    {date.toLocaleDateString('ko-KR', { month: 'long' })}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="tabs-container">
         <div className="tabs-list">
