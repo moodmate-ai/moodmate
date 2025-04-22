@@ -1,5 +1,6 @@
 package com.moodmate.api.config;
 
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -26,7 +27,7 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**").permitAll()
                 .requestMatchers("/login").permitAll()
                 .anyRequest().authenticated())
-            .oauth2Login(Customizer.withDefaults());
+            /*.oauth2Login(Customizer.withDefaults())*/;
 
         return http.build();
     }
