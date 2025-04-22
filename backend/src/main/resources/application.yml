@@ -1,5 +1,9 @@
 spring:
   profiles:
-    include: oauth
+    include:
+    - oauth2
+    - jwt
     active: dev
+  application:
+    name: moodmate-backend
   

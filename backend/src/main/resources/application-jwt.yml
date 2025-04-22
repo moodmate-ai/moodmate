@@ -1,0 +1,5 @@
+jwt:
+  header: Authorization
+  secret: changeitbeforeproduction
+  access-token-expire: 3600 # 60 minutes
+  refresh-token-expire: 1209600 # 14 days
