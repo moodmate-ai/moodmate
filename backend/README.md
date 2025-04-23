@@ -2,7 +2,20 @@ Moodmate Backend
 =====
 
 ## 시작하는 법(작성중)
+
+### 로컬환경에서 Spring Boot 테스트 환경 구축
+
 ```
+docker-compose up --build -d
+```
+
+API와 PostgreSQL만 연결되어 있으며, 8080 포트로 API 접근 가능하고 5432 포트로 DB 접속가능
+
+다시 올릴 때 docker에서 image를 지울 필요 있음(수정예정)
+
+
+### 작성중
+
 minikube start
 kubectl apply -f {backend}\k8s-settings\postgresql.yaml
 kubectl apply -f {backend}\k8s-settings\nginx.yaml
