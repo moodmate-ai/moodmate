@@ -7,13 +7,30 @@ server:
       force: true
 
 spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: "32401732479-rsoptcn5f1liia0r098japg3ofgp5t6k.apps.googleusercontent.com"
+            client-secret: "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"
+            scope: profile, email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+            authorization-grant-type: authorization_code
+            client-name: Google
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            user-name-attribute: sub
   config:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:postgresql://postgres:5432/moodmate
-    username: moodmate
-    password: moodmate
+    url: jdbc:postgresql://postgres:5432/test
+    username: test
+    password: 9878
   devtools:
     livereload:
       enabled: true
@@ -30,13 +47,13 @@ spring:
 springdoc:
   api-docs:
     enabled: ${API_DOCS_ENABLED:true}
-    path: /api-docs
+    path: /v3/api-docs
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   swagger-ui:
     operationsSorter: alpha
     tagsSorter: alpha
-    path: /
+    path: /swagger-ui/index.html
     disableSwaggerDefaultUrl: false
     docExpansion: list
   paths-to-match:

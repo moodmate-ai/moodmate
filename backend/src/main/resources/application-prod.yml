@@ -11,9 +11,9 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:postgresql://postgres:5432/moodmate
-    username: moodmate
-    password: moodmate
+    url: jdbc:postgresql://postgres:5432/test
+    username: test
+    password: 9878
   jpa:
     show-sql: true
     database: postgresql
