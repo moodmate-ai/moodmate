@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useDiary } from '../contexts/DiaryContext';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
@@ -21,6 +21,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   const { currentUser } = useAuth();
   const { diaries, fetchDiaries, deleteDiary } = useDiary();
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -303,6 +304,33 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
       date.getFullYear() === today.getFullYear()
     );
   };
+
+  // location.state에서 selectedDate를 받아 처리
+  useEffect(() => {
+    if (location.state?.selectedDate) {
+      const date = new Date(location.state.selectedDate);
+      setCurrentDate(date);
+      setCurrentMonth(date.getMonth());
+      setCurrentYear(date.getFullYear());
+      
+      // 해당 날짜의 일기 찾기
+      const diary = diaries.find(d => {
+        const diaryDate = new Date(d.date);
+        return (
+          diaryDate.getFullYear() === date.getFullYear() &&
+          diaryDate.getMonth() === date.getMonth() &&
+          diaryDate.getDate() === date.getDate()
+        );
+      });
+
+      if (diary) {
+        // 일기로 스크롤
+        setTimeout(() => {
+          scrollToDiary(diary.id);
+        }, 100);
+      }
+    }
+  }, [location.state, diaries]);
 
   return (
     <main className="calendar-content">

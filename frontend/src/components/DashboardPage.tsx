@@ -120,7 +120,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
   };
 
   const handleDiaryClick = (diary: Diary) => {
-    navigate('/diary', { state: { selectedDate: diary.date } });
+    navigate('/calendar', { state: { selectedDate: diary.date } });
   };
 
   return (
@@ -196,7 +196,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
               <BookOpen size={20} />
               최근 일기
             </h2>
-            <Link to="/diary" className="view-all-link">전체보기</Link>
+            <Link to="/calendar" className="view-all-link">전체보기</Link>
           </div>
           <div className="recent-entries">
             {recentDiaries.map((diary) => (
