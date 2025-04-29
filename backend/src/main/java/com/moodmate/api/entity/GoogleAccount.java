@@ -9,16 +9,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Builder
 @Getter
-@Setter
-@AllArgsConstructor
 @Table(name = "google_account")
 public class GoogleAccount {
 
@@ -30,15 +26,10 @@ public class GoogleAccount {
     @OneToOne(optional = false)
     private User connectedUser;
 
-    @Column(name="connected_id")
-    private String connectedId;
+    @Column(nullable = false)
+    private String connectedEmail;
 
-    @Column(name="connected_at", nullable = false)
+    @Column(nullable = false)
     private LocalDateTime connectedAt;
 
-    public GoogleAccount(User connectedUser, String connectedId, LocalDateTime connectedAt) {
-        this.connectedUser = connectedUser;
-        this.connectedId = connectedId;
-        this.connectedAt = connectedAt;
-    }
 }
