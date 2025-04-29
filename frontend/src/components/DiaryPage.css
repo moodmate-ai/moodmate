@@ -4,7 +4,6 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow-y: auto;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -32,13 +31,13 @@
   border-radius: 50%;
   background-color: white;
   border: 1px solid #e5e7eb;
-  color: #4b5563;
+  color: #000000;
   transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .month-nav-button:hover {
-  background-color: #f3f4f6;
+  background-color: #BBF7D0;
   transform: translateY(-2px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -46,13 +45,13 @@
 .current-month {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #2c3e50;
+  color: #000000;
   margin: 0 1rem;
 }
 
 /* 새 일기 작성 카드 */
 .new-diary-card {
-  background: white;
+  background: var(--card-background);
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 2rem;
@@ -61,6 +60,7 @@
 
 .diary-card-content {
   padding: 1.5rem;
+  background-color: var(--card-background);
 }
 
 .diary-card {
@@ -68,9 +68,15 @@
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  cursor: pointer;
   display: flex;
   flex-direction: row;
+}
+
+.diary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* 기분별 카드 배경색 */
@@ -97,11 +103,9 @@
 .diary-card-header {
   padding: 1.5rem 1rem;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
   gap: 0.5rem;
-  min-width: 120px;
-  border-right: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .diary-card-header > div:first-child {
@@ -210,7 +214,7 @@
   line-height: 1.5;
   color: #1f2937;
   transition: all 0.2s ease;
-  background-color: white;
+  background-color: var(--card-background);
 }
 
 .diary-input:focus {
@@ -248,30 +252,61 @@
 }
 
 .growth-circle {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .growth-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #16a34a;
+  font-size: 24px;
+  line-height: 1;
 }
 
 .diary-actions {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.action-buttons {
+  display: flex;
   gap: 0.5rem;
+}
+
+.save-button-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.save-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #BBF7D0;
+  color: #4b5563;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.save-button:hover {
+  background-color: #e5e7eb;
+  color: #1f2937;
+}
+
+.save-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .action-button {
   padding: 0.5rem;
-  color: #6b7280;
+  color: #000000;
   transition: all 0.2s ease;
   border-radius: 0.375rem;
   border: none;
@@ -285,22 +320,7 @@
 }
 
 .action-button.delete:hover {
-  color: #ef4444;
-}
-
-.save-button {
-  padding: 0.5rem 1.5rem;
-  background-color: #16a34a;
-  color: white;
-  border-radius: 0.375rem;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  border: none;
-  cursor: pointer;
-}
-
-.save-button:hover {
-  background-color: #15803d;
+  color: #dc2626;
 }
 
 /* 일기 목록 */
@@ -362,17 +382,175 @@
   border-radius: 2px;
 }
 
-.image-gallery {
+/* 날짜 선택기 스타일 */
+.date-selector {
   display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  margin-top: 1rem;
+  position: relative;
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
 
-.image-gallery img {
-  width: 96px;
-  height: 96px;
-  object-fit: cover;
-  border-radius: 0.375rem;
+.date-picker-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.date-selector-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.date-selector-button:hover {
+  background-color: #f3f4f6;
+  border-color: #16a34a;
+}
+
+.date-selector-button span {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #000000;
+}
+
+.date-nav-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  color: #000000;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.date-nav-button svg {
+  width: 20px;
+  height: 20px;
+  color: #000000;
+  stroke-width: 2;
+}
+
+.date-nav-button:hover {
+  background-color: #f3f4f6;
+  border-color: #16a34a;
+}
+
+.date-nav-button:hover svg {
+  color: #16a34a;
+}
+
+.date-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.date-picker {
+  background-color: white;
+  border-radius: 1rem;
+  padding: 1rem;
+  width: 300px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.date-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  color: #000000;
+}
+
+.date-picker-header h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.date-picker-header button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  color: #000000;
+}
+
+.date-picker-header button:hover {
+  background-color: #f3f4f6;
+}
+
+.date-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem;
+}
+
+.date-picker-weekday {
+  text-align: center;
+  font-weight: 500;
+  color: #000000;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+.date-picker-day {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: center;
+  color: #000000;
+}
+
+.date-picker-day:hover {
+  background-color: #f3f4f6;
+}
+
+.date-picker-day.other-month {
+  color: #9ca3af;
+}
+
+.date-picker-day.selected {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.date-picker-day.today {
+  border: 1px solid var(--primary-color);
+  color: #000000;
 }
 
 @media (max-width: 768px) {
@@ -389,9 +567,215 @@
     height: 40px;
     font-size: 1.25rem;
   }
+}
 
-  .image-gallery img {
-    width: 80px;
-    height: 80px;
-  }
+/* AI 챗봇 미리보기 */
+.ai-chat-preview {
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+  background-color: var(--card-background);
+  border-radius: 1rem;
+  border: 1px solid var(--border-color);
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ai-chat-preview::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid var(--card-background);
+}
+
+.ai-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.ai-avatar {
+  width: 40px;
+  height: 40px;
+  background-color: #e9ecef;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.message-content {
+  background-color: var(--card-background);
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  flex-grow: 1;
+}
+
+.message-content p {
+  margin: 0;
+  color: var(--text-color);
+  line-height: 1.5;
+}
+
+.start-chat-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background-color: #4ade80;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 1rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.start-chat-button:hover {
+  background-color: #22c55e;
+  transform: translateY(-1px);
+}
+
+.start-chat-button:active {
+  transform: translateY(0);
+}
+
+.mood-emoji {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* AI 댓글 스타일 */
+.ai-comment-section {
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  position: relative;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  background-color: transparent;
+  border-radius: 0 0 1rem 1rem;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.comment-title {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.comment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comment {
+  display: flex;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+  color: white;
+}
+
+.comment-bubble {
+  background-color: var(--card-background);
+  padding: 0.75rem 1rem;
+  border-radius: 0 1rem 1rem 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  max-width: calc(100% - 40px);
+  position: relative;
+  border: 1px solid var(--border-color);
+}
+
+.comment-bubble::before {
+  content: '';
+  position: absolute;
+  top: 0.75rem;
+  left: -6px;
+  width: 12px;
+  height: 12px;
+  background-color: var(--card-background);
+  transform: rotate(45deg);
+  border-left: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.comment-content {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.reply-button {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #BBF7D0;
+  border: 1px solid #BBF7D0;
+  border-radius: 1.5rem;
+  font-size: 0.85rem;
+  color: #16a34a;
+  margin: 0.5rem 0 0 2.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reply-button:hover {
+  background-color: #86EFAC;
+  border-color: #86EFAC;
+  color: #15803d;
+}
+
+.reply-button svg {
+  margin-right: 0.5rem;
+}
+
+.comment-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.comment-time {
+  color: var(--text-secondary);
 } 
