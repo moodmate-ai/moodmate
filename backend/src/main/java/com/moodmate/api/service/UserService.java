@@ -8,8 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.moodmate.api.dto.UserDTO.UserCreationDTO;
-import com.moodmate.api.dto.UserDTO.UserResponseDTO;
+import com.moodmate.api.dto.UserDTO.*;
 import com.moodmate.api.entity.GoogleAccount;
 import com.moodmate.api.entity.User;
 import com.moodmate.api.repository.GoogleAccountRepository;
@@ -87,6 +86,7 @@ public class UserService {
             .role(dto.getRole())
             .name(dto.getName())
             .createdAt(dto.getCreatedAt())
+            .modifiedAt(LocalDateTime.now())
             .build();
 
         return UserResponseDTO.fromEntity(userRepository.save(updatedUser));

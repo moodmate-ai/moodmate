@@ -35,6 +35,7 @@ public class UserDTO {
         private Role role;
         private String name;
         private LocalDateTime createdAt;
+        private LocalDateTime modifiedAt;
 
         public static UserResponseDTO fromEntity(User user) {
             return UserResponseDTO.builder()
@@ -45,6 +46,7 @@ public class UserDTO {
                 .role(user.getRole())
                 .name(user.getName())
                 .createdAt(user.getCreatedAt())
+                .modifiedAt(user.getModifiedAt())
                 .build();
         }
     }

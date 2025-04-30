@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Builder;
@@ -24,6 +25,7 @@ public class GoogleAccount {
     private Long id;
 
     @OneToOne(optional = false)
+    @JoinColumn(table = "user", name = "id")
     private User connectedUser;
 
     @Column(nullable = false)
