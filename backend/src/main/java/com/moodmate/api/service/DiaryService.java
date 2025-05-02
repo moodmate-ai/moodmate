@@ -8,16 +8,17 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.moodmate.api.dto.DiaryDTO.*;
+import com.moodmate.api.dto.DiaryDTO.DiaryCreationDTO;
+import com.moodmate.api.dto.DiaryDTO.DiaryResponseDTO;
 import com.moodmate.api.entity.Diary;
 import com.moodmate.api.entity.User;
 import com.moodmate.api.repository.DiaryRepository;
 import com.moodmate.api.repository.UserRepository;
 
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class DiaryService {
     
     private UserRepository userRepository;
@@ -33,7 +34,6 @@ public class DiaryService {
         Diary diary = Diary.builder()
             .body(dto.getBody())
             .user(existUser.get())
-            .emotion(dto.getEmotion())
             .createdAt(LocalDateTime.now())
             .build();
 
@@ -67,14 +67,14 @@ public class DiaryService {
 
     @Transactional
     public DiaryResponseDTO updateDiary(DiaryResponseDTO dto) throws RuntimeException {
-        Optional<Diary> existDiary = diaryRepository.findById(dto.getId());
+        Optional<Diary> existDiary = diaryRepository.findById(dto.getDiaryId());
         Optional<User> existUser = userRepository.findById(dto.getUserId());
 
         if(existDiary.isEmpty() || existUser.isEmpty())
             throw new RuntimeException("Cannot Find Diary");
         
         Diary updatedDiary = Diary.builder()
-            .id(dto.getId())
+            .diaryId(dto.getDiaryId())
             .body(dto.getBody())
             .user(existUser.get())
             .emotion(dto.getEmotion())

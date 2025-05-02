@@ -8,27 +8,32 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.moodmate.api.dto.UserDTO.*;
+import com.moodmate.api.dto.UserDTO.UserCreationDTO;
+import com.moodmate.api.dto.UserDTO.UserResponseDTO;
 import com.moodmate.api.entity.GoogleAccount;
 import com.moodmate.api.entity.User;
 import com.moodmate.api.repository.GoogleAccountRepository;
 import com.moodmate.api.repository.UserRepository;
 
-import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@NoArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
 
-    private GoogleAccountRepository googleRepository;
-    private UserRepository userRepository;
+    private final GoogleAccountRepository googleRepository;
+    private final UserRepository userRepository;
 
     @Transactional
     public UserResponseDTO createUser(UserCreationDTO dto) throws RuntimeException {
         Optional<GoogleAccount> existAccount =  googleRepository.findByConnectedEmail(dto.getEmail());
-
+        Optional<User> existUser = userRepository.findByUsername(dto.getUsername());
+        
         if(existAccount.isPresent())
-            throw new RuntimeException("Member Already Exist: "+ dto.getEmail());
+            throw new RuntimeException("User Already Exist With E-Mail: "+ dto.getEmail());
+
+        if(existUser.isPresent())
+            throw new RuntimeException("Username Already Taken");
 
         User user = User.builder()
             .email(dto.getEmail())
@@ -63,7 +68,7 @@ public class UserService {
     }
 
     @Transactional
-    public List<UserResponseDTO> readUserByname(String name) {
+    public List<UserResponseDTO> readUserByName(String name) {
         List<User> existUser = userRepository.findByName(name);
 
         return existUser.stream()
@@ -73,16 +78,15 @@ public class UserService {
 
     @Transactional
     public UserResponseDTO updateUser(UserResponseDTO dto) throws RuntimeException {
-        Optional<User> existUser = userRepository.findById(dto.getId());
+        Optional<User> existUser = userRepository.findById(dto.getUserId());
 
         if(existUser.isEmpty())
             throw new RuntimeException("Cannot Find User");
         
         User updatedUser = User.builder()
-            .id(dto.getId())
+            .userId(dto.getUserId())
             .email(dto.getEmail())
             .username(dto.getUsername())
-            .refreshToken(dto.getRefreshToken())
             .role(dto.getRole())
             .name(dto.getName())
             .createdAt(dto.getCreatedAt())
@@ -107,7 +111,7 @@ public class UserService {
         if(existUser.isEmpty())
             throw new RuntimeException("Cannot Find User with DB ID: " + id);
         
-         Optional<GoogleAccount> existAccount =  googleRepository.findByConnectedUser(existUser.get());
+        Optional<GoogleAccount> existAccount =  googleRepository.findByConnectedUser(existUser.get());
 
         if(existAccount.isPresent())
             googleRepository.delete(existAccount.get());
