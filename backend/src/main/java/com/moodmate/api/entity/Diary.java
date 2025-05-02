@@ -51,4 +51,16 @@ public class Diary {
     @Column
     private LocalDateTime modifiedAt;
 
+    public void setBody(String body) {
+        this.body = body;
+    }
+
+    public void setEmotion(Emotion emotion) {
+        this.emotion = emotion;
+    }
+
+    public void setModifiedAt(LocalDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
 }

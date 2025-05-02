@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.moodmate.api.dto.UserDTO.UserCreationDTO;
+import com.moodmate.api.dto.UserDTO.UserRequestDTO;
 import com.moodmate.api.dto.UserDTO.UserResponseDTO;
 import com.moodmate.api.entity.GoogleAccount;
 import com.moodmate.api.entity.User;
@@ -25,7 +25,7 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional
-    public UserResponseDTO createUser(UserCreationDTO dto) throws RuntimeException {
+    public UserResponseDTO createUser(UserRequestDTO dto) throws RuntimeException {
         Optional<GoogleAccount> existAccount =  googleRepository.findByConnectedEmail(dto.getEmail());
         Optional<User> existUser = userRepository.findByUsername(dto.getUsername());
         
@@ -77,23 +77,16 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDTO updateUser(UserResponseDTO dto) throws RuntimeException {
-        Optional<User> existUser = userRepository.findById(dto.getUserId());
+    public UserResponseDTO updateUser(Long userId, UserRequestDTO dto) throws RuntimeException {
+        Optional<User> existUser = userRepository.findById(userId);
 
         if(existUser.isEmpty())
             throw new RuntimeException("Cannot Find User");
         
-        User updatedUser = User.builder()
-            .userId(dto.getUserId())
-            .email(dto.getEmail())
-            .username(dto.getUsername())
-            .role(dto.getRole())
-            .name(dto.getName())
-            .createdAt(dto.getCreatedAt())
-            .modifiedAt(LocalDateTime.now())
-            .build();
-
-        return UserResponseDTO.fromEntity(userRepository.save(updatedUser));
+        existUser.get().updatePersonal(dto.getEmail(), dto.getUsername(), dto.getName());
+        existUser.get().setModifiedAt(LocalDateTime.now());
+        
+        return UserResponseDTO.fromEntity(existUser.get());
     }
 
 //   @Transactional

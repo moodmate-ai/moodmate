@@ -1,6 +1,7 @@
 package com.moodmate.api.service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -8,10 +9,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.moodmate.api.dto.DiaryDTO.DiaryCreationDTO;
+import com.moodmate.api.dto.DiaryDTO.DiaryRequestDTO;
 import com.moodmate.api.dto.DiaryDTO.DiaryResponseDTO;
 import com.moodmate.api.entity.Diary;
 import com.moodmate.api.entity.User;
+import com.moodmate.api.enumerated.Emotion;
 import com.moodmate.api.repository.DiaryRepository;
 import com.moodmate.api.repository.UserRepository;
 
@@ -21,11 +23,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DiaryService {
     
-    private UserRepository userRepository;
-    private DiaryRepository diaryRepository;
+    private final UserRepository userRepository;
+    private final DiaryRepository diaryRepository;
 
     @Transactional
-    public DiaryResponseDTO createDiary(DiaryCreationDTO dto) throws RuntimeException {
+    public DiaryResponseDTO createDiary(DiaryRequestDTO dto) throws RuntimeException {
         Optional<User> existUser = userRepository.findById(dto.getUserId());
         
         if(existUser.isEmpty())
@@ -34,6 +36,7 @@ public class DiaryService {
         Diary diary = Diary.builder()
             .body(dto.getBody())
             .user(existUser.get())
+            .emotion(Emotion.PENDING)
             .createdAt(LocalDateTime.now())
             .build();
 
@@ -59,30 +62,25 @@ public class DiaryService {
             throw new RuntimeException("Cannot Find User");
 
         List<Diary> existDiary = diaryRepository.findByUser(existUser.get());
-
+        Collections.reverse(existDiary);
+        
         return existDiary.stream()
             .map(DiaryResponseDTO::fromEntity)
             .collect(Collectors.toList());
     }
 
     @Transactional
-    public DiaryResponseDTO updateDiary(DiaryResponseDTO dto) throws RuntimeException {
-        Optional<Diary> existDiary = diaryRepository.findById(dto.getDiaryId());
+    public DiaryResponseDTO updateDiary(Long diaryId, DiaryRequestDTO dto) throws RuntimeException {
+        Optional<Diary> existDiary = diaryRepository.findById(diaryId);
         Optional<User> existUser = userRepository.findById(dto.getUserId());
 
         if(existDiary.isEmpty() || existUser.isEmpty())
             throw new RuntimeException("Cannot Find Diary");
         
-        Diary updatedDiary = Diary.builder()
-            .diaryId(dto.getDiaryId())
-            .body(dto.getBody())
-            .user(existUser.get())
-            .emotion(dto.getEmotion())
-            .createdAt(dto.getCreatedAt())
-            .modifiedAt(LocalDateTime.now())
-            .build();
+        existDiary.get().setBody(dto.getBody());
+        existDiary.get().setModifiedAt(LocalDateTime.now());
 
-        return DiaryResponseDTO.fromEntity(diaryRepository.save(updatedDiary));
+        return DiaryResponseDTO.fromEntity(existDiary.get());
     }
 
     @Transactional

@@ -18,7 +18,7 @@ public class DiaryDTO {
     @Getter
     @Setter
     @Builder
-    public static class DiaryCreationDTO {
+    public static class DiaryRequestDTO {
         @Schema(
             name = "body",
             description = "Diary 본문",

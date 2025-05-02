@@ -68,4 +68,22 @@ public class User {
 
     @Column
     private LocalDateTime modifiedAt;
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setModifiedAt(LocalDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public void updatePersonal(String email, String username, String name) {
+        this.email = email;
+        this.username = username;
+        this.name = name;
+    }
 }

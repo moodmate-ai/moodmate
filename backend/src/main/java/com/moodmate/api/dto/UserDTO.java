@@ -17,7 +17,7 @@ public class UserDTO {
     @Builder
     @Getter
     @Setter
-    public static class UserCreationDTO {
+    public static class UserRequestDTO {
 
         @Schema(
             name = "email",

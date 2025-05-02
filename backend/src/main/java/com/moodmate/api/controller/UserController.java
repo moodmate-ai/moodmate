@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.moodmate.api.dto.UserDTO.UserCreationDTO;
+import com.moodmate.api.dto.UserDTO.UserRequestDTO;
 import com.moodmate.api.dto.UserDTO.UserResponseDTO;
 import com.moodmate.api.service.UserService;
 
@@ -28,8 +28,10 @@ public class UserController {
     // CREATE METHOD
 
     @PostMapping("/create")
-    @Operation()
-    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserCreationDTO dto) {
+    @Operation(
+        summary = "User 생성"
+    )
+    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO dto) {
         UserResponseDTO res = usersvc.createUser(dto);
 
         return ResponseEntity.ok(res);
@@ -71,7 +73,9 @@ public class UserController {
     }
 
     @GetMapping("/searchname/{name}")
-    @Operation()
+    @Operation(
+        summary = "이름으로 찾기"
+    )
     public ResponseEntity<List<UserResponseDTO>> getUserByName(@PathVariable String name) {
         List<UserResponseDTO> res = usersvc.readUserByName(name);
 
@@ -80,10 +84,12 @@ public class UserController {
 
     // UPDATE METHOD
 
-    @PutMapping("/update")
-    @Operation()
-    public ResponseEntity<UserResponseDTO> updateUser(@RequestBody UserResponseDTO dto) {
-        UserResponseDTO res = usersvc.updateUser(dto);
+    @PutMapping("/update/{userId}")
+    @Operation(
+        summary = "User 데이터 변경 - RefreshToken은 여기서 노출되지도 변경되지도 않습니다"
+    )
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable Long userId, @RequestBody UserRequestDTO dto) {
+        UserResponseDTO res = usersvc.updateUser(userId, dto);
 
         return ResponseEntity.ok(res);
     }
@@ -91,7 +97,9 @@ public class UserController {
     // DELETE METHOD
 
     @DeleteMapping("/delete/{userId}")
-    @Operation()
+    @Operation(
+        summary = "User 및 연동된 계정정보 삭제"
+    )
     public ResponseEntity<String> deleteUser(@PathVariable Long userId) {
         usersvc.deleteUser(userId);
 
