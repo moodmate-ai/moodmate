@@ -7,11 +7,10 @@ import com.moodmate.api.entity.GoogleAccount;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Data
-@NoArgsConstructor
+@Builder
 @Getter
 @Setter
 public class GoogleAccountDTO {
@@ -21,16 +20,8 @@ public class GoogleAccountDTO {
     private String connectedEmail;
     private LocalDateTime connectedAt;
 
-    @Builder
-    public GoogleAccountDTO(Long id, Long connectedUserId, String connectedEmail, LocalDateTime connectedAt) {
-        this.id = id;
-        this.connectedUserId = connectedUserId;
-        this.connectedEmail = connectedEmail;
-        this.connectedAt = connectedAt;
-    }
-
     public static GoogleAccountDTO fromEntity(GoogleAccount googleAccount) {
-        Long userId = googleAccount.getConnectedUser().getId();
+        Long userId = googleAccount.getConnectedUser().getUserId();
 
         return GoogleAccountDTO.builder()
             .id(googleAccount.getId())
