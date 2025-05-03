@@ -38,6 +38,5 @@ springdoc:
     disableSwaggerDefaultUrl: false
     docExpansion: list
   paths-to-match:
-  - /user/**
-  - /diary/**
+  - /api/**
   show-actuator: true

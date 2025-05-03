@@ -15,6 +15,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
 
 // Table user
@@ -23,7 +25,9 @@ import lombok.Getter;
 @Builder
 @Getter
 @DynamicUpdate
-@Table(name = "user")
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "users")
 public class User {
 
     // id
@@ -31,7 +35,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(unique = true, nullable = false)
-    private Long id;
+    private Long userId;
 
     // email
     // 연락용 이메일입니다. 이메일 연동은 별도의 테이블을 사용합니다.
@@ -40,7 +44,7 @@ public class User {
 
     // username
     // 계정명입니다.
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
     // refreshtoken
@@ -56,7 +60,7 @@ public class User {
 
     // name
     // 사용자의 이름입니다.
-    @Column(nullable = false)
+    @Column
     private String name;
 
     @Column(nullable = false)
@@ -64,4 +68,22 @@ public class User {
 
     @Column
     private LocalDateTime modifiedAt;
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setModifiedAt(LocalDateTime modifiedAt) {
+        this.modifiedAt = modifiedAt;
+    }
+
+    public void updatePersonal(String email, String username, String name) {
+        this.email = email;
+        this.username = username;
+        this.name = name;
+    }
 }
