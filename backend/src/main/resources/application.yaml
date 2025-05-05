@@ -1,0 +1,13 @@
+# application.yml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google: # registrationId
+            client-id: your-google-client-id
+            client-secret: your-google-client-secret
+            provider: google
+        provider:
+          google:
+            issuer-uri: https://accounts.google.com
