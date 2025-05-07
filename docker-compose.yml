@@ -10,12 +10,12 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
-  api:
+  backend-api:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
     volumes:
-      - .:/build/libs
+      - backend:/build/libs
     ports:
       - "8080:8080"
     depends_on:
@@ -23,5 +23,16 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: dev
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - frontend:/build
+    ports:
+      - "3000:3000"
+
 volumes:
   postgres-data:
+  backend:
+  frontend:
