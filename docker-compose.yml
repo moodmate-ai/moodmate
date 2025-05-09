@@ -15,7 +15,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     volumes:
-      - backend:/build/libs
+      - backend:/spring
     ports:
       - "8080:8080"
     depends_on:
