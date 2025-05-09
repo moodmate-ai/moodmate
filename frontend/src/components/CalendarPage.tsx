@@ -90,14 +90,19 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     { type: 'neutral', label: '보통', emoji: '😌' }
   ];
 
-  // 감정에 따른 배경색 반환
+  // 컴포넌트 마운트 시 일기 데이터 가져오기
+  useEffect(() => {
+    fetchDiaries();
+  }, [fetchDiaries]);
+
+  // 감정에 따른 색상 반환
   const getMoodColor = (mood: string) => {
     switch(mood) {
       case 'happy': return 'happy';
       case 'sad': return 'sad';
       case 'angry': return 'angry';
-      case 'anxious': return 'anxious';
       case 'neutral': return 'neutral';
+      case 'anxious': return 'anxious';
       default: return 'neutral';
     }
   };
@@ -108,9 +113,9 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
       case 'happy': return '😊';
       case 'sad': return '😢';
       case 'angry': return '😠';
-      case 'anxious': return '😰';
       case 'neutral': return '😌';
-      default: return '😐';
+      case 'anxious': return '😰';
+      default: return '😌';
     }
   };
   
@@ -226,14 +231,19 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   };
 
   // 일기 삭제
-  const handleDelete = (diaryId: string) => {
+  const handleDelete = async (diaryId: string) => {
     if (window.confirm('정말로 이 일기를 삭제하시겠습니까?')) {
-      deleteDiary(diaryId);
+      try {
+        await deleteDiary(diaryId);
+      } catch (error) {
+        console.error('Failed to delete diary:', error);
+        alert('일기 삭제에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   };
 
   // AI 챗봇과 대화 시작
-  const handleStartChat = (diary: any) => {
+  const handleStartChat = (diary: Diary) => {
     window.scrollTo(0, 0);
     navigate('/chats', { state: { diary, date: diary.date } });
   };
