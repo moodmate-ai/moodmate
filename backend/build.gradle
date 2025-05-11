@@ -45,6 +45,10 @@ dependencies {
   developmentOnly 'org.springframework.boot:spring-boot-devtools'
   testImplementation 'org.springframework.boot:spring-boot-starter-test'
   testImplementation 'org.springframework.restdocs:spring-restdocs-mockmvc'
+
+  implementation 'org.springframework.security:spring-security-oauth2-jose'
+  implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+
   testImplementation 'org.springframework.security:spring-security-test'
   testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
   compileOnly 'org.projectlombok:lombok:1.18.38'
