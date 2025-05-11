@@ -11,13 +11,6 @@ interface LoginPageProps {
 const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
   const navigate = useNavigate();
 
-  const handleSuccess = (credentialResponse: any) => {
-    const token = credentialResponse.credential;
-    console.log("Google token:", token);
-    onGoogleLogin();
-    // add backend API 
-  };
-
   return (
     <div className="login-container">
       <div className="login-box">
@@ -28,8 +21,11 @@ const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
           <GoogleLogin
             onSuccess={(credentialResponse) => {
-              console.log("Google Login Success:", credentialResponse);
-              onGoogleLogin(); 
+              const credential = credentialResponse.credential;
+              if(credential) {
+                localStorage.setItem('googleToken', credential);
+                onGoogleLogin(); 
+              }
             }}
             onError={() => {
               console.log("Google Login Failed");
@@ -40,7 +36,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
         </div>
 
         <div className="signup-link">
-          계저이 없으신가요? <a href="/signup">회원가입</a>
+          계정이 없으신가요? <a href="/signup">회원가입</a>
         </div>
       </div>
     </div>

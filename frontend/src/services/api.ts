@@ -9,6 +9,19 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('googleToken');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 export interface Diary {
   id: string;
   date: string;
@@ -23,6 +36,7 @@ export const diaryApi = {
   // Create
   createDiary: async (diary: Omit<Diary, 'id'>) => {
     const response = await api.post('/diary/create', diary);
+    console.log(response.data);
     return response.data;
   },
 
