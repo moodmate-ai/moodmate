@@ -125,7 +125,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
       case 'angry': return '😠';
       case 'neutral': return '😌';
       case 'anxious': return '😰';
-      default: return '😐';
+      default: return '😌';
     }
   };
   
@@ -157,7 +157,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   };
 
   // 일기 저장 처리
-  const handleSave = () => {
+  const handleSave = async () => {
     // 같은 날짜의 일기가 이미 있는지 확인
     const existingDiary = diaries.find((entry: Diary) => entry.date === selectedDate);
     
@@ -166,30 +166,34 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
       return;
     }
 
-    const newDiary: Diary = {
-      id: editingDiaryId ? editingDiaryId.toString() : uuidv4(),
+    const newDiary = {
       date: selectedDate,
       mood: currentMood,
       moodEmoji: getMoodEmoji(currentMood),
       content,
-      growth: Math.floor(Math.random() * 30) + 70
+      growth: Math.floor(Math.random() * 30) + 70,
+      userId: 1 // TODO: 실제 로그인된 사용자의 ID를 사용해야 함
     };
 
-    // DiaryContext를 통해 일기 저장
-    if (editingDiaryId) {
-      updateDiary(editingDiaryId, newDiary);
-    } else {
-      addDiary(newDiary);
-    }
+    try {
+      if (editingDiaryId) {
+        await updateDiary(editingDiaryId, newDiary);
+      } else {
+        await addDiary(newDiary);
+      }
 
-    // 상태 초기화
-    setContent('');
-    setCurrentMood('neutral');
-    setEditingDiaryId(null);
+      // 상태 초기화
+      setContent('');
+      setCurrentMood('neutral');
+      setEditingDiaryId(null);
+    } catch (error) {
+      console.error('Failed to save diary:', error);
+      alert('일기 저장에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   // 분석 페이지로 이동
-  const handleAnalysis = (diary: any) => {
+  const handleAnalysis = (diary: Diary) => {
     navigate('/analysis', { state: { diary } });
   };
 
@@ -203,9 +207,14 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
     }
   };
 
-  const handleDelete = (diaryId: string) => {
+  const handleDelete = async (diaryId: string) => {
     if (window.confirm('정말로 이 일기를 삭제하시겠습니까?')) {
-      deleteDiary(diaryId);
+      try {
+        await deleteDiary(diaryId);
+      } catch (error) {
+        console.error('Failed to delete diary:', error);
+        alert('일기 삭제에 실패했습니다. 다시 시도해주세요.');
+      }
     }
   };
 
@@ -221,7 +230,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   };
 
   // AI 챗봇과 대화 시작
-  const handleStartChat = (diary: any) => {
+  const handleStartChat = (diary: Diary) => {
     window.scrollTo(0, 0);
     navigate('/chats', { state: { diary, date: diary.date } });
   };

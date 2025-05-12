@@ -14,22 +14,53 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
   const [currentDate, setCurrentDate] = useState(new Date());
   const [greeting, setGreeting] = useState('');
   const [streakCount, setStreakCount] = useState(0);
+  const [moodStats] = useState([
+    { name: '행복', value: 60, color: '#FBBF24' },
+    { name: '보통', value: 25, color: '#A3E635' },
+    { name: '불안', value: 10, color: '#60A5FA' },
+    { name: '슬픔', value: 3, color: '#818CF8' },
+    { name: '화남', value: 2, color: '#F87171' },
+  ]);
   const navigate = useNavigate();
-  const { diaries } = useDiary();
+  const { diaries, fetchDiaries } = useDiary();
   
+  // 컴포넌트 마운트 시 일기 데이터 가져오기
+  useEffect(() => {
+    fetchDiaries();
+  }, [fetchDiaries]);
+
+  // 감정 통계 계산
+  useEffect(() => {
+    if (diaries.length > 0) {
+      const moodCounts = {
+        happy: 0,
+        neutral: 0,
+        anxious: 0,
+        sad: 0,
+        angry: 0
+      };
+
+      diaries.forEach(diary => {
+        moodCounts[diary.mood as keyof typeof moodCounts]++;
+      });
+
+      const total = diaries.length;
+      const newMoodStats = [
+        { name: '행복', value: Math.round((moodCounts.happy / total) * 100), color: '#FBBF24' },
+        { name: '보통', value: Math.round((moodCounts.neutral / total) * 100), color: '#A3E635' },
+        { name: '불안', value: Math.round((moodCounts.anxious / total) * 100), color: '#60A5FA' },
+        { name: '슬픔', value: Math.round((moodCounts.sad / total) * 100), color: '#818CF8' },
+        { name: '화남', value: Math.round((moodCounts.angry / total) * 100), color: '#F87171' },
+      ];
+
+      setMoodStats(newMoodStats);
+    }
+  }, [diaries]);
+
   // 최근 일기 3개 가져오기
   const recentDiaries = diaries
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
     .slice(0, 3);
-
-  // 감정 통계 데이터 (예시)
-  const moodStats = [
-    { name: '행복', value: 40, color: '#FBBF24' },
-    { name: '보통', value: 30, color: '#A3E635' },
-    { name: '불안', value: 15, color: '#60A5FA' },
-    { name: '슬픔', value: 10, color: '#818CF8' },
-    { name: '화남', value: 5, color: '#F87171' },
-  ];
 
   // 인사말 설정
   useEffect(() => {

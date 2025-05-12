@@ -6,4 +6,7 @@ spring:
     active: dev
   application:
     name: moodmate-backend
-  
+    
+  docker:
+    compose:
+      enabled: false
