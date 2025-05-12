@@ -4,63 +4,164 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDiary } from '../contexts/DiaryContext';
 import { Diary } from '../types/Diary';
 import './DashboardPage.css';
+import { useAuth } from '../contexts/AuthContext';
+import { diaryApi } from '../services/api';
 
 interface DashboardPageProps {
   userName: string;
   profileImage?: string;
 }
 
+const getMoodValue = (mood: string): number => {
+  switch(mood) {
+    case 'happy': return 5;
+    case 'neutral': return 3;
+    case 'anxious': return 2;
+    case 'sad': return 1;
+    case 'angry': return 1;
+    default: return 3;
+  }
+};
+
 const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage }) => {
+  const { currentUser } = useAuth();
+  const { diaries } = useDiary();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [greeting, setGreeting] = useState('');
   const [streakCount, setStreakCount] = useState(0);
-  const [moodStats] = useState([
-    { name: '행복', value: 60, color: '#FBBF24' },
-    { name: '보통', value: 25, color: '#A3E635' },
-    { name: '불안', value: 10, color: '#60A5FA' },
-    { name: '슬픔', value: 3, color: '#818CF8' },
-    { name: '화남', value: 2, color: '#F87171' },
-  ]);
+  const [moodStats, setMoodStats] = useState<Array<{ name: string; value: number; color: string }>>([]);
+  const [moodTrend, setMoodTrend] = useState<Array<{ date: string; value: number }>>([]);
+  const [dailyInsight, setDailyInsight] = useState<string>('');
   const navigate = useNavigate();
-  const { diaries, fetchDiaries } = useDiary();
   
   // 컴포넌트 마운트 시 일기 데이터 가져오기
   useEffect(() => {
-    fetchDiaries();
-  }, [fetchDiaries]);
+    if (currentUser?.id) {
+      diaryApi.getDiariesByUserId(currentUser.id)
+        .then((data: Diary[]) => {
+          // 감정 통계 계산
+          const moodCounts = {
+            happy: 0,
+            neutral: 0,
+            anxious: 0,
+            sad: 0,
+            angry: 0
+          };
 
-  // 감정 통계 계산
-  useEffect(() => {
-    if (diaries.length > 0) {
-      const moodCounts = {
-        happy: 0,
-        neutral: 0,
-        anxious: 0,
-        sad: 0,
-        angry: 0
-      };
+          data.forEach((diary: Diary) => {
+            moodCounts[diary.mood as keyof typeof moodCounts]++;
+          });
 
-      diaries.forEach(diary => {
-        moodCounts[diary.mood as keyof typeof moodCounts]++;
-      });
+          const total = data.length;
+          const newMoodStats = [
+            { name: '행복', value: Math.round((moodCounts.happy / total) * 100), color: '#FBBF24' },
+            { name: '보통', value: Math.round((moodCounts.neutral / total) * 100), color: '#A3E635' },
+            { name: '불안', value: Math.round((moodCounts.anxious / total) * 100), color: '#60A5FA' },
+            { name: '슬픔', value: Math.round((moodCounts.sad / total) * 100), color: '#818CF8' },
+            { name: '화남', value: Math.round((moodCounts.angry / total) * 100), color: '#F87171' },
+          ];
 
-      const total = diaries.length;
-      const newMoodStats = [
-        { name: '행복', value: Math.round((moodCounts.happy / total) * 100), color: '#FBBF24' },
-        { name: '보통', value: Math.round((moodCounts.neutral / total) * 100), color: '#A3E635' },
-        { name: '불안', value: Math.round((moodCounts.anxious / total) * 100), color: '#60A5FA' },
-        { name: '슬픔', value: Math.round((moodCounts.sad / total) * 100), color: '#818CF8' },
-        { name: '화남', value: Math.round((moodCounts.angry / total) * 100), color: '#F87171' },
-      ];
+          setMoodStats(newMoodStats);
 
-      setMoodStats(newMoodStats);
+          // 연속 작성 일수 계산
+          if (data.length === 0) {
+            setStreakCount(0);
+            return;
+          }
+
+          const sortedDiaries = [...data].sort((a, b) => 
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+
+          let currentStreak = 0;
+          let currentDate = new Date();
+          currentDate.setHours(0, 0, 0, 0);
+
+          // 오늘 일기를 작성했는지 확인
+          const hasTodayDiary = sortedDiaries.some(diary => {
+            const diaryDate = new Date(diary.date);
+            diaryDate.setHours(0, 0, 0, 0);
+            return diaryDate.getTime() === currentDate.getTime();
+          });
+
+          if (hasTodayDiary) {
+            currentStreak = 1;
+            let checkDate = new Date(currentDate);
+            checkDate.setDate(checkDate.getDate() - 1);
+
+            while (true) {
+              const hasDiary = sortedDiaries.some(diary => {
+                const diaryDate = new Date(diary.date);
+                diaryDate.setHours(0, 0, 0, 0);
+                return diaryDate.getTime() === checkDate.getTime();
+              });
+
+              if (!hasDiary) break;
+              currentStreak++;
+              checkDate.setDate(checkDate.getDate() - 1);
+            }
+          }
+
+          setStreakCount(currentStreak);
+
+          // 감정 추이 계산 (최근 7일)
+          const last7Days = Array.from({ length: 7 }, (_, i) => {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            return date;
+          }).reverse();
+
+          const trendData = last7Days.map(date => {
+            const diary = data.find(d => {
+              const diaryDate = new Date(d.date);
+              return diaryDate.toDateString() === date.toDateString();
+            });
+
+            return {
+              date: date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' }),
+              value: diary ? getMoodValue(diary.mood) : 0
+            };
+          });
+
+          setMoodTrend(trendData);
+
+          // 일일 인사이트 생성
+          const recentDiaries = data
+            .filter((d: Diary) => {
+              const diaryDate = new Date(d.date);
+              const weekAgo = new Date();
+              weekAgo.setDate(weekAgo.getDate() - 7);
+              return diaryDate >= weekAgo;
+            })
+            .sort((a: Diary, b: Diary) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+          if (recentDiaries.length > 0) {
+            const positiveDiaries = recentDiaries.filter((d: Diary) => d.mood === 'happy');
+            const exerciseDiaries = recentDiaries.filter((d: Diary) => 
+              d.content.toLowerCase().includes('운동') || 
+              d.content.toLowerCase().includes('걷기') ||
+              d.content.toLowerCase().includes('달리기')
+            );
+
+            let insight = '';
+            if (exerciseDiaries.length > 0 && positiveDiaries.length > 0) {
+              const exerciseWithPositive = exerciseDiaries.filter(d => d.mood === 'happy');
+              if (exerciseWithPositive.length > 0) {
+                insight = '최근 일주일 동안 운동을 했을 때 행복감이 증가했습니다. 오늘도 가벼운 운동을 해보는 건 어떨까요?';
+              }
+            } else if (recentDiaries[0].mood === 'sad' || recentDiaries[0].mood === 'anxious') {
+              insight = '최근 감정이 다소 불안정한 것 같네요. 마음 편히 휴식을 취하는 시간을 가져보는 건 어떨까요?';
+            } else {
+              insight = '오늘 하루도 긍정적인 마음으로 시작해보세요. 작은 일에도 감사하는 마음을 가지면 더 행복해질 수 있어요.';
+            }
+            setDailyInsight(insight);
+          }
+        })
+        .catch(error => {
+          console.error('일기 데이터를 가져오는데 실패했습니다:', error);
+        });
     }
-  }, [diaries]);
-
-  // 최근 일기 3개 가져오기
-  const recentDiaries = diaries
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 3);
+  }, [currentUser?.id]);
 
   // 인사말 설정
   useEffect(() => {
@@ -78,49 +179,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
     setGreeting(newGreeting);
   }, [currentDate]);
 
-  // 연속 작성 일수 계산
-  useEffect(() => {
-    if (diaries.length === 0) {
-      setStreakCount(0);
-      return;
-    }
-
-    // 일기를 날짜순으로 정렬
-    const sortedDiaries = [...diaries].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
-
-    let currentStreak = 0;
-    let currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-
-    // 오늘 일기를 작성했는지 확인
-    const hasTodayDiary = sortedDiaries.some(diary => {
-      const diaryDate = new Date(diary.date);
-      diaryDate.setHours(0, 0, 0, 0);
-      return diaryDate.getTime() === currentDate.getTime();
-    });
-
-    if (hasTodayDiary) {
-      currentStreak = 1;
-      currentDate.setDate(currentDate.getDate() - 1);
-    }
-
-    // 과거 일기들을 확인하면서 연속 작성 일수를 계산
-    for (let i = sortedDiaries.length - 1; i >= 0; i--) {
-      const diaryDate = new Date(sortedDiaries[i].date);
-      diaryDate.setHours(0, 0, 0, 0);
-
-      if (diaryDate.getTime() === currentDate.getTime()) {
-        currentStreak++;
-        currentDate.setDate(currentDate.getDate() - 1);
-      } else if (diaryDate.getTime() < currentDate.getTime()) {
-        break;
-      }
-    }
-
-    setStreakCount(currentStreak);
-  }, [diaries]);
+  // 최근 일기 3개 가져오기
+  const recentDiaries = diaries
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
 
   // 날짜 포맷팅
   const formatDate = (date: Date) => {
@@ -134,20 +196,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
 
   // 간략한 날짜 포맷
   const formatShortDate = (dateString: string) => {
-    const now = new Date();
     const date = new Date(dateString);
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffInMinutes < 1) return '방금 전';
-    if (diffInMinutes < 60) return `${diffInMinutes}분 전`;
-    
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours}시간 전`;
-    }
-    
-    const diffInDays = Math.floor(diffInHours / 24);
-    return `${diffInDays}일 전`;
+    return date.toLocaleDateString('ko-KR', {
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   const handleDiaryClick = (diary: Diary) => {
@@ -260,19 +313,26 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
           </div>
           <div className="mood-trend">
             <div className="trend-info">
-              <div className="trend-value positive">+15%</div>
-              <div className="trend-label">긍정적 감정 증가</div>
+              <div className={`trend-value ${moodTrend[moodTrend.length - 1]?.value > moodTrend[0]?.value ? 'positive' : 'negative'}`}>
+                {moodTrend.length > 0 ? 
+                  `${Math.round(((moodTrend[moodTrend.length - 1].value - moodTrend[0].value) / moodTrend[0].value) * 100)}%` : 
+                  '0%'}
+              </div>
+              <div className="trend-label">
+                {moodTrend.length > 0 ? 
+                  (moodTrend[moodTrend.length - 1].value > moodTrend[0].value ? '긍정적 감정 증가' : '감정 변화') : 
+                  '데이터 없음'}
+              </div>
             </div>
             <div className="trend-chart">
-              {/* 차트를 표현할 간단한 시각적 요소 */}
               <div className="trend-bars">
-                <div className="trend-bar" style={{ height: '40%' }}></div>
-                <div className="trend-bar" style={{ height: '30%' }}></div>
-                <div className="trend-bar" style={{ height: '45%' }}></div>
-                <div className="trend-bar" style={{ height: '60%' }}></div>
-                <div className="trend-bar" style={{ height: '50%' }}></div>
-                <div className="trend-bar" style={{ height: '75%' }}></div>
-                <div className="trend-bar active" style={{ height: '85%' }}></div>
+                {moodTrend.map((day, index) => (
+                  <div 
+                    key={day.date}
+                    className={`trend-bar ${index === moodTrend.length - 1 ? 'active' : ''}`}
+                    style={{ height: `${(day.value / 5) * 100}%` }}
+                  ></div>
+                ))}
               </div>
             </div>
           </div>
@@ -288,8 +348,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
           <div className="daily-insight">
             <p>
               <span className="insight-emoji">💡</span>
-              최근 일주일 동안 운동을 했을 때 행복감이 증가했습니다. 
-              오늘도 가벼운 운동을 해보는 건 어떨까요?
+              {dailyInsight || '아직 충분한 데이터가 없습니다. 일기를 작성하며 감정을 기록해보세요.'}
             </p>
           </div>
         </div>
