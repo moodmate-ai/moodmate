@@ -3,3 +3,5 @@
 .vscode
 .idea
 git-crypt-key.txt
+__pycache__
+.pytest_cache
