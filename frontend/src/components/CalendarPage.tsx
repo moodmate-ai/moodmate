@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useDiary } from '../contexts/DiaryContext';
@@ -8,7 +8,7 @@ import { FaChevronLeft, FaChevronRight, FaPlus, FaRegCalendarAlt } from 'react-i
 import { motion } from 'framer-motion';
 import './CalendarPage.css';
 import { ChevronLeft, ChevronRight, BarChart2, Edit3, Trash2, MessageCircle } from 'lucide-react';
-import { Diary } from '../types/Diary';
+import { diaryApi, Diary } from '../services/api';
 
 interface CalendarPageProps {
   isLoggedIn: boolean;
@@ -31,28 +31,6 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   
-  // 예시 일기 데이터
-  const [diaryEntries, setDiaryEntries] = useState([
-    {
-      id: 1,
-      date: '2025-04-01',
-      day: 'Mon',
-      mood: 'neutral',
-      moodEmoji: '😌',
-      content: '오늘 하루는 맑고 반짝인 시집텨서 기분이 좋았다. 사실에는 따뜻한 차를 마시면서 일했고, 오후에는 산책을 하면서 여유로운 시간을 보냈다. 바쁜 하루도 좋지만, 이렇게 조용히 쉬는 날도 참 소중한 것같다. 가끔은 나를위한 휴식이 삶고 필요의 순간을 즐기는 것이 행복이라는 생각이 들었다.',
-      growth: 75
-    },
-    {
-      id: 2,
-      date: '2025-04-02',
-      day: 'Tue',
-      mood: 'happy',
-      moodEmoji: '😊',
-      content: '아침에 일어나자 날씨가 정말좋을 때, 맑고 푸른 하늘을 보고 기분이 좋았다. 바람도 시원하게 불고, 날씨가 너무 좋았다. 나는 오랫만에 쳇을 정리하며 집을 깨끗하게 만들었다. 나를위한 정성넣어 시간을 보낼 수 있다는 게 정말로 행복했지! 생각도 많았고, 오후에는 짧게 산책도 하며 사랑하는 꽃가게들도 구경했는데, 모두들 반갑게 인사해줘서 마음이 훈훈해졌다. 전체적으로 참 행복한 하루! 꽃의 소소한 향기가 주는 여유로움이 가장 큰 행복인 것 같다.',
-      growth: 85
-    }
-  ]);
-  
   // 요일 배열
   const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   
@@ -61,25 +39,6 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
   ];
-  
-  // 예시 감정 데이터 (실제로는 API에서 가져올 것)
-  const moodData: { [key: string]: { mood: string; emoji: string } } = {
-    '2025-4-1': { mood: 'happy', emoji: '😊' },
-    '2025-4-2': { mood: 'happy', emoji: '🙂' },
-    '2025-4-3': { mood: 'anxious', emoji: '😰' },
-    '2025-4-4': { mood: 'excited', emoji: '🤩' },
-    '2025-4-5': { mood: 'neutral', emoji: '😐' },
-    '2025-4-6': { mood: 'sad', emoji: '🥶' },
-    '2025-4-7': { mood: 'happy', emoji: '😀' },
-    '2025-4-8': { mood: 'neutral', emoji: '😶' },
-    '2025-4-9': { mood: 'happy', emoji: '😄' },
-    '2025-4-10': { mood: 'neutral', emoji: '🙂' },
-    '2025-4-11': { mood: 'happy', emoji: '😁' },
-    '2025-4-13': { mood: 'neutral', emoji: '🙂' },
-    '2025-4-14': { mood: 'neutral', emoji: '😐' },
-    '2025-4-16': { mood: 'excited', emoji: '😁' },
-    '2025-4-17': { mood: 'neutral', emoji: '😐' },
-  };
   
   // 감정 타입 배열
   const moodTypes = [
@@ -92,8 +51,27 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
 
   // 컴포넌트 마운트 시 일기 데이터 가져오기
   useEffect(() => {
-    fetchDiaries();
-  }, [fetchDiaries]);
+    if (currentUser?.id) {
+      diaryApi.getDiariesByUserId(currentUser.id)
+        .then(data => {
+          fetchDiaries();
+        })
+        .catch(error => {
+          console.error('일기 데이터를 가져오는데 실패했습니다:', error);
+        });
+    }
+  }, [currentUser?.id, fetchDiaries]);
+
+  // diaries를 기반으로 날짜별 감정 정보를 담은 객체 생성
+  const moodData = useMemo(() => {
+    const data: { [date: string]: string } = {};
+    diaries.forEach(diary => {
+      const date = new Date(diary.date);
+      const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+      data[dateStr] = diary.mood;
+    });
+    return data;
+  }, [diaries]);
 
   // 감정에 따른 색상 반환
   const getMoodColor = (mood: string) => {

@@ -3,6 +3,8 @@ import { MoreVertical, Send, Smile, Paperclip, Bot, Calendar, ChevronLeft, Chevr
 import './ChatPage.css';
 import { subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { diaryApi, Diary } from '../services/api';
 
 // Add blank export for components without explicit ChatPage import
 export const ComingSoonPage: React.FC<{ title: string }> = ({ title }) => {
@@ -27,6 +29,7 @@ interface ChatPageProps {
 }
 
 const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImage = 'https://via.placeholder.com/150' }) => {
+  const { currentUser } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
@@ -34,6 +37,12 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   const [datePickerDate, setDatePickerDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(messages.length === 0);
+  const [moodAnalysis, setMoodAnalysis] = useState<{
+    summary: string;
+    sentiment: { positive: number; neutral: number; negative: number };
+    emotions: Array<{ name: string; value: number }>;
+    keywords: string[];
+  } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -67,13 +76,70 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
     }
   }, [location.state?.diary]);
 
+  // 선택된 날짜의 일기 데이터 가져오기
+  useEffect(() => {
+    if (currentUser?.id) {
+      const fetchDiaryData = async () => {
+        try {
+          const response = await diaryApi.getDiariesByUserId(currentUser.id);
+          const selectedDateStr = selectedDate.toISOString().split('T')[0];
+          const diary = response.find((d: Diary) => d.date.startsWith(selectedDateStr));
+
+          if (diary) {
+            // 감정 분석 데이터 생성
+            const sentiment = {
+              positive: diary.mood === 'happy' ? 70 : diary.mood === 'neutral' ? 50 : 30,
+              neutral: diary.mood === 'neutral' ? 40 : diary.mood === 'happy' ? 20 : 30,
+              negative: diary.mood === 'sad' || diary.mood === 'angry' ? 40 : diary.mood === 'anxious' ? 30 : 10
+            };
+
+            // 감정 분포 계산
+            const emotions = [
+              { name: '행복', value: diary.mood === 'happy' ? 60 : 0 },
+              { name: '평온', value: diary.mood === 'neutral' ? 40 : 0 },
+              { name: '기대', value: diary.mood === 'happy' ? 30 : 0 },
+              { name: '감사', value: diary.mood === 'happy' ? 25 : 0 },
+              { name: '슬픔', value: diary.mood === 'sad' ? 20 : 0 },
+              { name: '걱정', value: diary.mood === 'anxious' ? 15 : 0 },
+              { name: '분노', value: diary.mood === 'angry' ? 10 : 0 }
+            ].filter(emotion => emotion.value > 0);
+
+            // 키워드 추출 (실제로는 NLP를 사용해야 함)
+            const keywords = diary.content
+              .split(/[\s,\.]+/)
+              .filter((word: string) => word.length > 1)
+              .slice(0, 5);
+
+            setMoodAnalysis({
+              summary: diary.mood === 'happy' ? '기분이 좋은 하루' :
+                      diary.mood === 'sad' ? '조금 우울한 하루' :
+                      diary.mood === 'angry' ? '화가 나는 하루' :
+                      diary.mood === 'anxious' ? '불안한 하루' :
+                      '평온한 하루',
+              sentiment,
+              emotions,
+              keywords
+            });
+          } else {
+            setMoodAnalysis(null);
+          }
+        } catch (error) {
+          console.error('일기 데이터를 가져오는데 실패했습니다:', error);
+          setMoodAnalysis(null);
+        }
+      };
+
+      fetchDiaryData();
+    }
+  }, [currentUser?.id, selectedDate]);
+
   // Suggested prompts for the welcome screen
   const suggestedPrompts = [
-    "오늘 기분이 좋지 않아요",
-    "스트레스 관리 방법 추천해줘",
-    "수면의 질을 높이는 방법",
-    "감정 조절이 어려울 때 어떻게 해야 할까요?",
-    "긍정적인 마인드를 유지하는 방법"
+    "오늘 하루는 어땠나요?",
+    "지금 가장 신경 쓰이는 일이 있나요?",
+    "요즘 자주 드는 생각이 있나요?",
+    "오늘 가장 기억에 남는 순간은?",
+    "내일은 어떤 하루가 되길 바라시나요?"
   ];
 
   // Auto-scroll to the bottom when new messages are added
@@ -115,34 +181,50 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
     }, 1500);
   };
 
-  const generateResponse = (userInput: string) => {
-    // Simple response patterns - in a real app this would be an API call
-    let response = '';
-    const lowercaseInput = userInput.toLowerCase();
+  const generateResponse = async (userInput: string) => {
+    try {
+      // TODO: 실제 AI API 호출로 교체
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: userInput,
+          userId: currentUser?.id,
+          timestamp: new Date().toISOString()
+        }),
+      });
 
-    if (lowercaseInput.includes('안녕') || lowercaseInput.includes('hi') || lowercaseInput.includes('hello')) {
-      response = `안녕하세요, ${userName}님! 오늘 기분이 어떠신가요?`;
-    } else if (lowercaseInput.includes('기분') && (lowercaseInput.includes('나쁘') || lowercaseInput.includes('안좋'))) {
-      response = '기분이 좋지 않으시군요. 혹시 무슨 일이 있으셨나요? 이야기를 나누면 도움이 될 수 있어요.';
-    } else if (lowercaseInput.includes('스트레스')) {
-      response = '스트레스 관리는 정말 중요해요. 깊은 호흡, 가벼운 운동, 충분한 수면이 도움이 될 수 있어요. 또한 좋아하는 취미 활동을 하는 것도 좋은 방법이에요.';
-    } else if (lowercaseInput.includes('수면') || lowercaseInput.includes('잠')) {
-      response = '양질의 수면을 위해서는 일정한 취침 시간을 유지하고, 자기 전 블루라이트를 피하며, 침실을 시원하고 조용하게 유지하는 것이 좋습니다. 또한, 카페인과 알코올을 자기 전에 피하는 것도 도움이 됩니다.';
-    } else if (lowercaseInput.includes('행복') || lowercaseInput.includes('긍정')) {
-      response = '긍정적인 마인드를 유지하기 위해 감사 일기를 쓰거나, 작은 성취에도 자신을 칭찬하는 것이 도움이 됩니다. 또한 마음챙김과 명상도 효과적인 방법이에요.';
-    } else {
-      response = '말씀해주셔서 감사합니다. 더 자세하게 이야기해주시면 도움이 될 수 있을 것 같아요. 감정이나 상황에 대해 더 알려주실 수 있을까요?';
+      if (!response.ok) {
+        throw new Error('AI 응답을 받아오는데 실패했습니다.');
+      }
+
+      const data = await response.json();
+      
+      const assistantMessage: Message = {
+        id: Date.now().toString(),
+        content: data.message,
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+
+      setIsThinking(false);
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('AI 응답 생성 중 오류 발생:', error);
+      
+      // 에러 발생 시 기본 응답
+      const fallbackMessage: Message = {
+        id: Date.now().toString(),
+        content: '죄송합니다. 응답을 생성하는데 문제가 발생했습니다. 잠시 후 다시 시도해주세요.',
+        sender: 'assistant',
+        timestamp: new Date(),
+      };
+
+      setIsThinking(false);
+      setMessages(prev => [...prev, fallbackMessage]);
     }
-
-    const assistantMessage: Message = {
-      id: Date.now().toString(),
-      content: response,
-      sender: 'assistant',
-      timestamp: new Date(),
-    };
-
-    setIsThinking(false);
-    setMessages(prev => [...prev, assistantMessage]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -342,17 +424,35 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
                 <h2>기분 요약</h2>
               </div>
               <div className="mood-summary">
-                <div className="mood-emoji">😊</div>
-                <div className="mood-text">기분이 좋은 하루</div>
-                <div className="mood-description">
-                  오늘은 전반적으로 긍정적인 감정이 우세한 하루였습니다. 
-                  특히 행복과 평온함이 많이 느껴졌고, 기대감도 있었습니다.
-                </div>
-                <div className="mood-details">
-                  <span className="sentiment-tag positive">긍정 70%</span>
-                  <span className="sentiment-tag neutral">중립 20%</span>
-                  <span className="sentiment-tag negative">부정 10%</span>
-                </div>
+                {moodAnalysis ? (
+                  <>
+                    <div className="mood-emoji">{moodAnalysis.summary.includes('좋은') ? '😊' : 
+                                             moodAnalysis.summary.includes('우울') ? '😢' :
+                                             moodAnalysis.summary.includes('화가') ? '😠' :
+                                             moodAnalysis.summary.includes('불안') ? '😰' : '😌'}</div>
+                    <div className="mood-text">{moodAnalysis.summary}</div>
+                    <div className="mood-description">
+                      {moodAnalysis.summary.includes('좋은') ? '오늘은 전반적으로 긍정적인 감정이 우세한 하루였습니다.' :
+                       moodAnalysis.summary.includes('우울') ? '오늘은 다소 우울한 감정이 있었던 하루였습니다.' :
+                       moodAnalysis.summary.includes('화가') ? '오늘은 화가 나는 일이 있었던 하루였습니다.' :
+                       moodAnalysis.summary.includes('불안') ? '오늘은 불안한 감정이 있었던 하루였습니다.' :
+                       '오늘은 평온한 하루였습니다.'}
+                    </div>
+                    <div className="mood-details">
+                      <span className="sentiment-tag positive">긍정 {moodAnalysis.sentiment.positive}%</span>
+                      <span className="sentiment-tag neutral">중립 {moodAnalysis.sentiment.neutral}%</span>
+                      <span className="sentiment-tag negative">부정 {moodAnalysis.sentiment.negative}%</span>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mood-emoji">📝</div>
+                    <div className="mood-text">아직 작성된 일기가 없습니다</div>
+                    <div className="mood-description">
+                      오늘의 일기를 작성하면 기분 분석을 확인할 수 있습니다.
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="analysis-card">
@@ -360,27 +460,35 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
                 <h2>감정 분포</h2>
               </div>
               <div className="sentiment-bars">
-                <div className="sentiment-bar">
-                  <div className="bar-label">긍정</div>
-                  <div className="bar-container">
-                    <div className="bar" style={{ width: '70%' }}></div>
+                {moodAnalysis ? (
+                  <>
+                    <div className="sentiment-bar">
+                      <div className="bar-label">긍정</div>
+                      <div className="bar-container">
+                        <div className="bar" style={{ width: `${moodAnalysis.sentiment.positive}%` }}></div>
+                      </div>
+                      <div className="bar-value">{moodAnalysis.sentiment.positive}%</div>
+                    </div>
+                    <div className="sentiment-bar">
+                      <div className="bar-label">중립</div>
+                      <div className="bar-container">
+                        <div className="bar" style={{ width: `${moodAnalysis.sentiment.neutral}%` }}></div>
+                      </div>
+                      <div className="bar-value">{moodAnalysis.sentiment.neutral}%</div>
+                    </div>
+                    <div className="sentiment-bar">
+                      <div className="bar-label">부정</div>
+                      <div className="bar-container">
+                        <div className="bar" style={{ width: `${moodAnalysis.sentiment.negative}%` }}></div>
+                      </div>
+                      <div className="bar-value">{moodAnalysis.sentiment.negative}%</div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="empty-state">
+                    <p>일기를 작성하면 감정 분포를 확인할 수 있습니다.</p>
                   </div>
-                  <div className="bar-value">70%</div>
-                </div>
-                <div className="sentiment-bar">
-                  <div className="bar-label">중립</div>
-                  <div className="bar-container">
-                    <div className="bar" style={{ width: '20%' }}></div>
-                  </div>
-                  <div className="bar-value">20%</div>
-                </div>
-                <div className="sentiment-bar">
-                  <div className="bar-label">부정</div>
-                  <div className="bar-container">
-                    <div className="bar" style={{ width: '10%' }}></div>
-                  </div>
-                  <div className="bar-value">10%</div>
-                </div>
+                )}
               </div>
             </div>
             <div className="analysis-card">
@@ -388,41 +496,19 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
                 <h2>상세 감정 분석</h2>
               </div>
               <div className="emotion-circles">
-                <div className="emotion-circle">
-                  <div className="circle" style={{ width: '60px', height: '60px' }}></div>
-                  <div className="emotion-label">행복</div>
-                  <div className="emotion-value">60%</div>
-                </div>
-                <div className="emotion-circle">
-                  <div className="circle" style={{ width: '40px', height: '40px' }}></div>
-                  <div className="emotion-label">평온</div>
-                  <div className="emotion-value">40%</div>
-                </div>
-                <div className="emotion-circle">
-                  <div className="circle" style={{ width: '30px', height: '30px' }}></div>
-                  <div className="emotion-label">기대</div>
-                  <div className="emotion-value">30%</div>
-                </div>
-                <div className="emotion-circle">
-                  <div className="circle" style={{ width: '25px', height: '25px' }}></div>
-                  <div className="emotion-label">감사</div>
-                  <div className="emotion-value">25%</div>
-                </div>
-                <div className="emotion-circle">
-                  <div className="circle" style={{ width: '20px', height: '20px' }}></div>
-                  <div className="emotion-label">슬픔</div>
-                  <div className="emotion-value">20%</div>
-                </div>
-                <div className="emotion-circle">
-                  <div className="circle" style={{ width: '15px', height: '15px' }}></div>
-                  <div className="emotion-label">걱정</div>
-                  <div className="emotion-value">15%</div>
-                </div>
-                <div className="emotion-circle">
-                  <div className="circle" style={{ width: '10px', height: '10px' }}></div>
-                  <div className="emotion-label">분노</div>
-                  <div className="emotion-value">10%</div>
-                </div>
+                {moodAnalysis ? (
+                  moodAnalysis.emotions.map((emotion, index) => (
+                    <div key={index} className="emotion-circle">
+                      <div className="circle" style={{ width: `${emotion.value}px`, height: `${emotion.value}px` }}></div>
+                      <div className="emotion-label">{emotion.name}</div>
+                      <div className="emotion-value">{emotion.value}%</div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="empty-state">
+                    <p>일기를 작성하면 상세 감정 분석을 확인할 수 있습니다.</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="analysis-card">
@@ -430,11 +516,15 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
                 <h2>키워드</h2>
               </div>
               <div className="keyword-cloud">
-                <span className="keyword-tag">가족</span>
-                <span className="keyword-tag">여행</span>
-                <span className="keyword-tag">휴식</span>
-                <span className="keyword-tag">운동</span>
-                <span className="keyword-tag">음악</span>
+                {moodAnalysis ? (
+                  moodAnalysis.keywords.map((keyword, index) => (
+                    <span key={index} className="keyword-tag">{keyword}</span>
+                  ))
+                ) : (
+                  <div className="empty-state">
+                    <p>일기를 작성하면 키워드를 확인할 수 있습니다.</p>
+                  </div>
+                )}
               </div>
             </div>
             <button 

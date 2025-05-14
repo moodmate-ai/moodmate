@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaChartLine, FaCalendarAlt, FaInfoCircle, FaFilter, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { Line, Bar } from 'react-chartjs-2';
 import {
@@ -15,6 +15,9 @@ import {
 import './HistoryPage.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart2, TrendingUp, Brain, Heart } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { useDiary } from '../contexts/DiaryContext';
+import { diaryApi } from '../services/api';
 
 ChartJS.register(
   CategoryScale,
@@ -27,11 +30,249 @@ ChartJS.register(
   Legend
 );
 
+interface TimeOfDayData {
+  name: string;
+  happy: number;
+  neutral: number;
+  anxious: number;
+  sad: number;
+  angry: number;
+}
+
+interface Diary {
+  id: number;
+  userId: number;
+  date: string;
+  mood: string;
+  content: string;
+}
+
 const HistoryPage: React.FC = () => {
+  const { currentUser } = useAuth();
+  const { diaries } = useDiary();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState('overview');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerDate, setDatePickerDate] = useState(new Date());
+  const [moodStats, setMoodStats] = useState<Array<{ name: string; value: number; color: string }>>([]);
+  const [moodFlowData, setMoodFlowData] = useState<Array<{ date: string; mood: number; label: string }>>([]);
+  const [timeOfDayData, setTimeOfDayData] = useState<TimeOfDayData[]>([]);
+  const [monthlyStats, setMonthlyStats] = useState<{
+    averageMood: number;
+    diaryRate: number;
+    positiveRate: number;
+    moodChange: number;
+    diaryRateChange: number;
+    positiveRateChange: number;
+  }>({
+    averageMood: 0,
+    diaryRate: 0,
+    positiveRate: 0,
+    moodChange: 0,
+    diaryRateChange: 0,
+    positiveRateChange: 0
+  });
+  const [activityPatterns, setActivityPatterns] = useState<{
+    positiveActivities: string[];
+    negativeActivities: string[];
+    patternDescription: string;
+  }>({
+    positiveActivities: [],
+    negativeActivities: [],
+    patternDescription: ''
+  });
+
+  useEffect(() => {
+    if (currentUser?.id) {
+      diaryApi.getDiariesByUserId(currentUser.id)
+        .then((data: Diary[]) => {
+          // 현재 월의 데이터 필터링
+          const currentMonthData = data.filter((diary: Diary) => {
+            const diaryDate = new Date(diary.date);
+            return diaryDate.getMonth() === currentDate.getMonth() &&
+                   diaryDate.getFullYear() === currentDate.getFullYear();
+          });
+
+          // 이전 월의 데이터 필터링
+          const prevMonthData = data.filter((diary: Diary) => {
+            const diaryDate = new Date(diary.date);
+            const prevMonth = new Date(currentDate);
+            prevMonth.setMonth(prevMonth.getMonth() - 1);
+            return diaryDate.getMonth() === prevMonth.getMonth() &&
+                   diaryDate.getFullYear() === prevMonth.getFullYear();
+          });
+
+          // 월간 통계 계산
+          const calculateMonthlyStats = (diaries: Diary[]) => {
+            if (diaries.length === 0) return {
+              averageMood: 0,
+              diaryRate: 0,
+              positiveRate: 0
+            };
+
+            const totalMood = diaries.reduce((sum, diary) => sum + getMoodValue(diary.mood), 0);
+            const positiveCount = diaries.filter(diary => diary.mood === 'happy').length;
+            const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+
+            return {
+              averageMood: totalMood / diaries.length,
+              diaryRate: (diaries.length / daysInMonth) * 100,
+              positiveRate: (positiveCount / diaries.length) * 100
+            };
+          };
+
+          const currentStats = calculateMonthlyStats(currentMonthData);
+          const prevStats = calculateMonthlyStats(prevMonthData);
+
+          setMonthlyStats({
+            averageMood: currentStats.averageMood,
+            diaryRate: currentStats.diaryRate,
+            positiveRate: currentStats.positiveRate,
+            moodChange: prevStats.averageMood ? ((currentStats.averageMood - prevStats.averageMood) / prevStats.averageMood) * 100 : 0,
+            diaryRateChange: prevStats.diaryRate ? ((currentStats.diaryRate - prevStats.diaryRate) / prevStats.diaryRate) * 100 : 0,
+            positiveRateChange: prevStats.positiveRate ? ((currentStats.positiveRate - prevStats.positiveRate) / prevStats.positiveRate) * 100 : 0
+          });
+
+          // 감정 통계 계산
+          const moodCounts = {
+            happy: 0,
+            neutral: 0,
+            anxious: 0,
+            sad: 0,
+            angry: 0
+          };
+
+          data.forEach(diary => {
+            moodCounts[diary.mood as keyof typeof moodCounts]++;
+          });
+
+          const total = data.length;
+          const newMoodStats = [
+            { name: '행복', value: Math.round((moodCounts.happy / total) * 100), color: '#FBBF24' },
+            { name: '보통', value: Math.round((moodCounts.neutral / total) * 100), color: '#A3E635' },
+            { name: '불안', value: Math.round((moodCounts.anxious / total) * 100), color: '#60A5FA' },
+            { name: '슬픔', value: Math.round((moodCounts.sad / total) * 100), color: '#818CF8' },
+            { name: '화남', value: Math.round((moodCounts.angry / total) * 100), color: '#F87171' },
+          ];
+
+          setMoodStats(newMoodStats);
+
+          // 감정 흐름 데이터 계산
+          const sortedDiaries = [...data].sort((a, b) => 
+            new Date(a.date).getTime() - new Date(b.date).getTime()
+          );
+
+          const newMoodFlowData = sortedDiaries.map(diary => {
+            const date = new Date(diary.date);
+            const moodValue = getMoodValue(diary.mood);
+            return {
+              date: `${date.getMonth() + 1}/${date.getDate()}`,
+              mood: moodValue,
+              label: `${date.getMonth() + 1}월 ${date.getDate()}일`
+            };
+          });
+
+          setMoodFlowData(newMoodFlowData);
+
+          // 시간대별 감정 통계 계산
+          const timeOfDayStats: TimeOfDayData[] = [
+            { name: '아침', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 },
+            { name: '점심', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 },
+            { name: '저녁', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 },
+            { name: '밤', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 }
+          ];
+
+          data.forEach((diary: Diary) => {
+            const hour = new Date(diary.date).getHours();
+            let timeIndex = 0;
+
+            if (hour >= 5 && hour < 11) timeIndex = 0;      // 아침
+            else if (hour >= 11 && hour < 17) timeIndex = 1; // 점심
+            else if (hour >= 17 && hour < 22) timeIndex = 2; // 저녁
+            else timeIndex = 3;                              // 밤
+
+            timeOfDayStats[timeIndex][diary.mood as keyof Omit<TimeOfDayData, 'name'>]++;
+          });
+
+          setTimeOfDayData(timeOfDayStats);
+
+          // 활동 패턴 분석
+          const currentMonthContent = currentMonthData.map(diary => diary.content.toLowerCase());
+          
+          // 긍정적 활동 추출
+          const positiveActivities = new Set<string>();
+          const negativeActivities = new Set<string>();
+          
+          currentMonthContent.forEach(content => {
+            // 운동 관련 키워드
+            if (content.includes('운동') || content.includes('걷기') || content.includes('달리기') || 
+                content.includes('헬스') || content.includes('요가') || content.includes('스트레칭')) {
+              positiveActivities.add('운동');
+            }
+            // 독서 관련 키워드
+            if (content.includes('책') || content.includes('독서') || content.includes('읽기')) {
+              positiveActivities.add('독서');
+            }
+            // 산책 관련 키워드
+            if (content.includes('산책') || content.includes('걷기') || content.includes('산행')) {
+              positiveActivities.add('산책');
+            }
+            // 수면 관련 키워드
+            if (content.includes('잠') || content.includes('수면') || content.includes('취침')) {
+              if (content.includes('부족') || content.includes('적음') || content.includes('늦게')) {
+                negativeActivities.add('수면 시간');
+              }
+            }
+            // 스트레스 관련 키워드
+            if (content.includes('스트레스') || content.includes('불안') || content.includes('걱정')) {
+              negativeActivities.add('스트레스');
+            }
+            // 식사 관련 키워드
+            if (content.includes('식사') || content.includes('밥') || content.includes('먹기')) {
+              if (content.includes('불규칙') || content.includes('늦게') || content.includes('거르기')) {
+                negativeActivities.add('불규칙한 식사');
+              }
+            }
+          });
+
+          // 패턴 설명 생성
+          const weekendDiaries = currentMonthData.filter(diary => {
+            const day = new Date(diary.date).getDay();
+            return day === 0 || day === 6; // 주말
+          });
+
+          const weekendRatio = (weekendDiaries.length / currentMonthData.length) * 100;
+          let patternDescription = '';
+
+          if (weekendRatio > 60) {
+            patternDescription = '이번 달에는 주로 주말에 일기를 작성하는 경향이 있으며, 특히 주말에 가장 활발한 활동을 보였습니다.';
+          } else if (weekendRatio < 30) {
+            patternDescription = '이번 달에는 주로 평일에 일기를 작성하는 경향이 있으며, 특히 평일 저녁에 가장 활발한 활동을 보였습니다.';
+          } else {
+            patternDescription = '이번 달에는 주말과 평일에 고르게 일기를 작성하는 경향을 보였습니다.';
+          }
+
+          setActivityPatterns({
+            positiveActivities: Array.from(positiveActivities),
+            negativeActivities: Array.from(negativeActivities),
+            patternDescription
+          });
+        })
+        .catch(error => {
+          console.error('일기 데이터를 가져오는데 실패했습니다:', error);
+        });
+    }
+  }, [currentUser?.id, currentDate]);
+
+  const getMoodValue = (mood: string): number => {
+    switch(mood) {
+      case 'happy': return 5;
+      case 'neutral': return 3;
+      case 'anxious': return 2;
+      case 'sad': return 1;
+      case 'angry': return 1;
+      default: return 3;
+    }
+  };
 
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
@@ -57,11 +298,11 @@ const HistoryPage: React.FC = () => {
 
   // 차트 데이터
   const lineChartData = {
-    labels: ['월', '화', '수', '목', '금', '토', '일'],
+    labels: moodFlowData.map(data => data.date),
     datasets: [
       {
         label: '기분 점수',
-        data: [4, 3, 5, 4, 3, 5, 4],
+        data: moodFlowData.map(data => data.mood),
         borderColor: '#4CAF50',
         backgroundColor: 'rgba(76, 175, 80, 0.1)',
         tension: 0.4,
@@ -90,17 +331,11 @@ const HistoryPage: React.FC = () => {
   };
 
   const barChartData = {
-    labels: ['매우 좋음', '좋음', '보통', '나쁨', '매우 나쁨'],
+    labels: moodStats.map(stat => stat.name),
     datasets: [
       {
-        data: [30, 25, 20, 15, 10],
-        backgroundColor: [
-          '#4CAF50',
-          '#8BC34A',
-          '#FFC107',
-          '#FF9800',
-          '#F44336',
-        ],
+        data: moodStats.map(stat => stat.value),
+        backgroundColor: moodStats.map(stat => stat.color),
       },
     ],
   };
@@ -126,71 +361,6 @@ const HistoryPage: React.FC = () => {
     },
   };
 
-  // 무드 흐름 데이터 (샘플)
-  const moodFlowData = [
-    { date: '11/1', mood: 3, label: '11월 1일' },
-    { date: '11/3', mood: 4, label: '11월 3일' },
-    { date: '11/5', mood: 5, label: '11월 5일' },
-    { date: '11/7', mood: 3, label: '11월 7일' },
-    { date: '11/9', mood: 4, label: '11월 9일' },
-    { date: '11/11', mood: 2, label: '11월 11일' },
-    { date: '11/13', mood: 1, label: '11월 13일' },
-    { date: '11/15', mood: 3, label: '11월 15일' },
-    { date: '11/17', mood: 4, label: '11월 17일' },
-    { date: '11/19', mood: 5, label: '11월 19일' },
-    { date: '11/21', mood: 3, label: '11월 21일' },
-    { date: '11/23', mood: 2, label: '11월 23일' },
-    { date: '11/25', mood: 4, label: '11월 25일' },
-    { date: '11/27', mood: 5, label: '11월 27일' },
-    { date: '11/29', mood: 3, label: '11월 29일' },
-    { date: '12/1', mood: 2, label: '12월 1일' },
-  ];
-  
-  // 무드 통계 데이터 (샘플)
-  const moodStatsData = [
-    { name: '행복', value: 12, color: '#FBBF24' },
-    { name: '보통', value: 8, color: '#A3E635' },
-    { name: '불안', value: 5, color: '#60A5FA' },
-    { name: '슬픔', value: 3, color: '#818CF8' },
-    { name: '화남', value: 2, color: '#F87171' },
-  ];
-  
-  // 시간대별 감정 분포 데이터 (샘플)
-  const timeOfDayData = [
-    { 
-      name: '아침', 
-      행복: 4, 
-      보통: 2, 
-      불안: 1, 
-      슬픔: 0, 
-      화남: 0 
-    },
-    { 
-      name: '점심', 
-      행복: 3, 
-      보통: 3, 
-      불안: 2, 
-      슬픔: 1, 
-      화남: 0 
-    },
-    { 
-      name: '저녁', 
-      행복: 5, 
-      보통: 2, 
-      불안: 1, 
-      슬픔: 2, 
-      화남: 1 
-    },
-    { 
-      name: '밤', 
-      행복: 0, 
-      보통: 1, 
-      불안: 1, 
-      슬픔: 0, 
-      화남: 1 
-    },
-  ];
-  
   // 무드 단계 색상
   const moodColors = ['#F87171', '#FB923C', '#FBBF24', '#A3E635', '#34D399', '#60A5FA'];
   
@@ -279,156 +449,138 @@ const HistoryPage: React.FC = () => {
         </div>
       )}
 
-      <div className="tabs-container">
-        <div className="tabs-list">
-          <button
-            className={`tab-button ${activeTab === 'overview' ? 'tab-button-active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            <FaChartLine className="tab-icon" />
-            개요
-          </button>
-          <button
-            className={`tab-button ${activeTab === 'calendar' ? 'tab-button-active' : ''}`}
-            onClick={() => setActiveTab('calendar')}
-          >
-            <FaCalendarAlt className="tab-icon" />
-            캘린더
-          </button>
+      <div className="insights-grid">
+        <div className="insight-card">
+          <div className="insight-label">평균 기분 점수</div>
+          <div className="insight-value">
+            {monthlyStats.averageMood.toFixed(1)}
+            <span className={`insight-change ${monthlyStats.moodChange >= 0 ? 'positive' : 'negative'}`}>
+              {monthlyStats.moodChange >= 0 ? '+' : ''}{monthlyStats.moodChange.toFixed(1)}
+            </span>
+          </div>
+          <div className="insight-description">
+            지난 달 대비 {monthlyStats.moodChange >= 0 ? '상승' : '하락'}
+          </div>
+        </div>
+        <div className="insight-card">
+          <div className="insight-label">일기 작성률</div>
+          <div className="insight-value">
+            {monthlyStats.diaryRate.toFixed(1)}%
+            <span className={`insight-change ${monthlyStats.diaryRateChange >= 0 ? 'positive' : 'negative'}`}>
+              {monthlyStats.diaryRateChange >= 0 ? '+' : ''}{monthlyStats.diaryRateChange.toFixed(1)}%
+            </span>
+          </div>
+          <div className="insight-description">
+            지난 달 대비 {monthlyStats.diaryRateChange >= 0 ? '상승' : '하락'}
+          </div>
+        </div>
+        <div className="insight-card">
+          <div className="insight-label">긍정적 감정 비율</div>
+          <div className="insight-value">
+            {monthlyStats.positiveRate.toFixed(1)}%
+            <span className={`insight-change ${monthlyStats.positiveRateChange >= 0 ? 'positive' : 'negative'}`}>
+              {monthlyStats.positiveRateChange >= 0 ? '+' : ''}{monthlyStats.positiveRateChange.toFixed(1)}%
+            </span>
+          </div>
+          <div className="insight-description">
+            지난 달 대비 {monthlyStats.positiveRateChange >= 0 ? '상승' : '하락'}
+          </div>
         </div>
       </div>
 
-      {activeTab === 'overview' ? (
-        <>
-          <div className="insights-grid">
-            <div className="insight-card">
-              <div className="insight-label">평균 기분 점수</div>
-              <div className="insight-value">
-                7.5
-                <span className="insight-change">+0.3</span>
-              </div>
-              <div className="insight-description">지난 달 대비 0.3점 상승</div>
-            </div>
-            <div className="insight-card">
-              <div className="insight-label">일기 작성률</div>
-              <div className="insight-value">
-                85%
-                <span className="insight-change">+5%</span>
-              </div>
-              <div className="insight-description">지난 달 대비 5% 상승</div>
-            </div>
-            <div className="insight-card">
-              <div className="insight-label">긍정적 감정 비율</div>
-              <div className="insight-value">
-                72%
-                <span className="insight-change">+3%</span>
-              </div>
-              <div className="insight-description">지난 달 대비 3% 상승</div>
-            </div>
-          </div>
-
-          <div className="charts-grid">
-            <div className="chart-card">
-              <div className="chart-header">
-                <h3 className="chart-title">주간 기분 추이</h3>
-                <button className="info-button">
-                  <FaInfoCircle />
-                </button>
-              </div>
-              <div className="chart-body">
-                <div className="mood-legend">
-                  <div className="mood-legend-item">
-                    <div className="mood-color" style={{ backgroundColor: '#4CAF50' }}></div>
-                    <span className="mood-name">매우 좋음</span>
-                  </div>
-                  <div className="mood-legend-item">
-                    <div className="mood-color" style={{ backgroundColor: '#8BC34A' }}></div>
-                    <span className="mood-name">좋음</span>
-                  </div>
-                  <div className="mood-legend-item">
-                    <div className="mood-color" style={{ backgroundColor: '#FFC107' }}></div>
-                    <span className="mood-name">보통</span>
-                  </div>
-                  <div className="mood-legend-item">
-                    <div className="mood-color" style={{ backgroundColor: '#FF9800' }}></div>
-                    <span className="mood-name">나쁨</span>
-                  </div>
-                  <div className="mood-legend-item">
-                    <div className="mood-color" style={{ backgroundColor: '#F44336' }}></div>
-                    <span className="mood-name">매우 나쁨</span>
-                  </div>
-                </div>
-                <div className="chart-container">
-                  <Line data={lineChartData} options={lineChartOptions} />
-                </div>
-              </div>
-            </div>
-
-            <div className="chart-card">
-              <div className="chart-header">
-                <h3 className="chart-title">감정 분포</h3>
-                <button className="info-button">
-                  <FaInfoCircle />
-                </button>
-              </div>
-              <div className="chart-body">
-                <div className="chart-container">
-                  <Bar data={barChartData} options={barChartOptions} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="patterns-card">
-            <div className="patterns-header">
-              <h3 className="patterns-title">패턴 분석</h3>
-              <button className="filter-button">
-                <FaFilter className="filter-icon" />
-                필터
-              </button>
-            </div>
-            <div className="pattern-section">
-              <h4 className="pattern-title">주요 활동 패턴</h4>
-              <p className="pattern-text">
-                이번 달에는 주로 주말에 일기를 작성하는 경향이 있으며, 
-                특히 토요일 저녁에 가장 활발한 활동을 보였습니다.
-              </p>
-            </div>
-            <div className="activity-grid">
-              <div>
-                <h4 className="activity-list-title">긍정적 활동</h4>
-                <ul className="activity-list">
-                  <li className="activity-item">운동 (주 3회)</li>
-                  <li className="activity-item">독서 (하루 30분)</li>
-                  <li className="activity-item">산책 (하루 20분)</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="activity-list-title">개선 필요 활동</h4>
-                <ul className="activity-list">
-                  <li className="activity-item">수면 시간 (평균 6시간)</li>
-                  <li className="activity-item">업무 스트레스</li>
-                  <li className="activity-item">불규칙한 식사</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </>
-      ) : (
+      <div className="charts-grid">
         <div className="chart-card">
           <div className="chart-header">
-            <h3 className="chart-title">월간 캘린더</h3>
+            <h3 className="chart-title">주간 기분 추이</h3>
+            <button className="info-button">
+              <FaInfoCircle />
+            </button>
+          </div>
+          <div className="chart-body">
+            <div className="mood-legend">
+              <div className="mood-legend-item">
+                <div className="mood-color" style={{ backgroundColor: '#4CAF50' }}></div>
+                <span className="mood-name">매우 좋음</span>
+              </div>
+              <div className="mood-legend-item">
+                <div className="mood-color" style={{ backgroundColor: '#8BC34A' }}></div>
+                <span className="mood-name">좋음</span>
+              </div>
+              <div className="mood-legend-item">
+                <div className="mood-color" style={{ backgroundColor: '#FFC107' }}></div>
+                <span className="mood-name">보통</span>
+              </div>
+              <div className="mood-legend-item">
+                <div className="mood-color" style={{ backgroundColor: '#FF9800' }}></div>
+                <span className="mood-name">나쁨</span>
+              </div>
+              <div className="mood-legend-item">
+                <div className="mood-color" style={{ backgroundColor: '#F44336' }}></div>
+                <span className="mood-name">매우 나쁨</span>
+              </div>
+            </div>
+            <div className="chart-container">
+              <Line data={lineChartData} options={lineChartOptions} />
+            </div>
+          </div>
+        </div>
+
+        <div className="chart-card">
+          <div className="chart-header">
+            <h3 className="chart-title">감정 분포</h3>
             <button className="info-button">
               <FaInfoCircle />
             </button>
           </div>
           <div className="chart-body">
             <div className="chart-container">
-              {/* 캘린더 컴포넌트가 들어갈 위치 */}
+              <Bar data={barChartData} options={barChartOptions} />
             </div>
           </div>
         </div>
-      )}
+      </div>
+
+      <div className="patterns-card">
+        <div className="patterns-header">
+          <h3 className="patterns-title">패턴 분석</h3>
+          <button className="filter-button">
+            <FaFilter className="filter-icon" />
+            필터
+          </button>
+        </div>
+        <div className="pattern-section">
+          <h4 className="pattern-title">주요 활동 패턴</h4>
+          <p className="pattern-text">
+            {activityPatterns.patternDescription}
+          </p>
+        </div>
+        <div className="activity-grid">
+          <div>
+            <h4 className="activity-list-title">긍정적 활동</h4>
+            <ul className="activity-list">
+              {activityPatterns.positiveActivities.length > 0 ? (
+                activityPatterns.positiveActivities.map((activity, index) => (
+                  <li key={index} className="activity-item">{activity}</li>
+                ))
+              ) : (
+                <li className="activity-item">긍정적 활동이 기록되지 않았습니다.</li>
+              )}
+            </ul>
+          </div>
+          <div>
+            <h4 className="activity-list-title">개선 필요 활동</h4>
+            <ul className="activity-list">
+              {activityPatterns.negativeActivities.length > 0 ? (
+                activityPatterns.negativeActivities.map((activity, index) => (
+                  <li key={index} className="activity-item">{activity}</li>
+                ))
+              ) : (
+                <li className="activity-item">개선이 필요한 활동이 기록되지 않았습니다.</li>
+              )}
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
