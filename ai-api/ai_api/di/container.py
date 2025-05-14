@@ -2,6 +2,7 @@ from dependency_injector import containers, providers
 from ai_api.infra.litellm import get_litellm_router
 from ai_api.core.component.llm.litellm import LiteLLM
 from ai_api.core.domain.usecase.chat import ChatUsecase
+from ai_api.core.domain.usecase.analyze import AnalyzeUsecase
 
 
 class Container(containers.DeclarativeContainer):
@@ -21,6 +22,11 @@ class Container(containers.DeclarativeContainer):
     
     chat_usecase = providers.Factory(
         ChatUsecase,
+        llm_port=llm_port,
+    )
+    
+    analyze_usecase = providers.Factory(
+        AnalyzeUsecase,
         llm_port=llm_port,
     )
 
