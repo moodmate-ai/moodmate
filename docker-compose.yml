@@ -10,6 +10,18 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
+  ai-api:
+    build:
+      context: ./ai-api
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    # depends_on:
+    #   - postgres
+    env_file:
+      - ./ai-api/.env
+    command: ["poetry", "run", "uvicorn", "ai_api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
   backend-api:
     build:
       context: ./backend
@@ -20,6 +32,7 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+      - ai-api
     environment:
       SPRING_PROFILES_ACTIVE: dev
 

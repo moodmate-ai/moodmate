@@ -1,1 +1,2 @@
 backend/src/main/resources/application-oauth.yml filter=git-crypt diff=git-crypt
+ai-api/.env filter=git-crypt diff=git-crypt
