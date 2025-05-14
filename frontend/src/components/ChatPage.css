@@ -513,10 +513,9 @@
   z-index: 9;
   background-color: var(--card-background);
   border-radius: 1rem;
-  margin: 0.5rem;
-  max-width: 1400px;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0.5rem auto;
+  width: 100%;
+  max-width: 1200px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   cursor: pointer;
   transition: all 0.3s ease;
@@ -552,6 +551,8 @@
   align-items: center;
   justify-content: center;
   height: 100%;
+  flex: 1;
+  text-align: center;
 }
 
 .analysis-preview .mood-text {
@@ -559,6 +560,7 @@
   color: #1f2937;
   font-weight: 600;
   line-height: 1;
+  text-align: center;
 }
 
 .expand-icon {
@@ -611,6 +613,7 @@
   border-radius: 0 0 1rem 1rem;
   position: relative;
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  width: 100%;
 }
 
 .analysis-card {
@@ -619,7 +622,7 @@
   padding: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-width: 400px;
+  width: 100%;
   border: 1px solid var(--border-color);
   position: relative;
   z-index: 1;
