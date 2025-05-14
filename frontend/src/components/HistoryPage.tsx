@@ -220,7 +220,7 @@ const HistoryPage: React.FC = () => {
             if (content.includes('잠') || content.includes('수면') || content.includes('취침')) {
               if (content.includes('부족') || content.includes('적음') || content.includes('늦게')) {
                 negativeActivities.add('수면 시간');
-              }
+            }
             }
             // 스트레스 관련 키워드
             if (content.includes('스트레스') || content.includes('불안') || content.includes('걱정')) {
@@ -449,10 +449,10 @@ const HistoryPage: React.FC = () => {
         </div>
       )}
 
-      <div className="insights-grid">
-        <div className="insight-card">
-          <div className="insight-label">평균 기분 점수</div>
-          <div className="insight-value">
+          <div className="insights-grid">
+            <div className="insight-card">
+              <div className="insight-label">평균 기분 점수</div>
+              <div className="insight-value">
             {monthlyStats.averageMood.toFixed(1)}
             <span className={`insight-change ${monthlyStats.moodChange >= 0 ? 'positive' : 'negative'}`}>
               {monthlyStats.moodChange >= 0 ? '+' : ''}{monthlyStats.moodChange.toFixed(1)}
@@ -460,11 +460,11 @@ const HistoryPage: React.FC = () => {
           </div>
           <div className="insight-description">
             지난 달 대비 {monthlyStats.moodChange >= 0 ? '상승' : '하락'}
-          </div>
-        </div>
-        <div className="insight-card">
-          <div className="insight-label">일기 작성률</div>
-          <div className="insight-value">
+              </div>
+            </div>
+            <div className="insight-card">
+              <div className="insight-label">일기 작성률</div>
+              <div className="insight-value">
             {monthlyStats.diaryRate.toFixed(1)}%
             <span className={`insight-change ${monthlyStats.diaryRateChange >= 0 ? 'positive' : 'negative'}`}>
               {monthlyStats.diaryRateChange >= 0 ? '+' : ''}{monthlyStats.diaryRateChange.toFixed(1)}%
@@ -472,92 +472,92 @@ const HistoryPage: React.FC = () => {
           </div>
           <div className="insight-description">
             지난 달 대비 {monthlyStats.diaryRateChange >= 0 ? '상승' : '하락'}
-          </div>
-        </div>
-        <div className="insight-card">
-          <div className="insight-label">긍정적 감정 비율</div>
-          <div className="insight-value">
+              </div>
+            </div>
+            <div className="insight-card">
+              <div className="insight-label">긍정적 감정 비율</div>
+              <div className="insight-value">
             {monthlyStats.positiveRate.toFixed(1)}%
             <span className={`insight-change ${monthlyStats.positiveRateChange >= 0 ? 'positive' : 'negative'}`}>
               {monthlyStats.positiveRateChange >= 0 ? '+' : ''}{monthlyStats.positiveRateChange.toFixed(1)}%
             </span>
-          </div>
+              </div>
           <div className="insight-description">
             지난 달 대비 {monthlyStats.positiveRateChange >= 0 ? '상승' : '하락'}
           </div>
-        </div>
-      </div>
-
-      <div className="charts-grid">
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3 className="chart-title">주간 기분 추이</h3>
-            <button className="info-button">
-              <FaInfoCircle />
-            </button>
-          </div>
-          <div className="chart-body">
-            <div className="mood-legend">
-              <div className="mood-legend-item">
-                <div className="mood-color" style={{ backgroundColor: '#4CAF50' }}></div>
-                <span className="mood-name">매우 좋음</span>
-              </div>
-              <div className="mood-legend-item">
-                <div className="mood-color" style={{ backgroundColor: '#8BC34A' }}></div>
-                <span className="mood-name">좋음</span>
-              </div>
-              <div className="mood-legend-item">
-                <div className="mood-color" style={{ backgroundColor: '#FFC107' }}></div>
-                <span className="mood-name">보통</span>
-              </div>
-              <div className="mood-legend-item">
-                <div className="mood-color" style={{ backgroundColor: '#FF9800' }}></div>
-                <span className="mood-name">나쁨</span>
-              </div>
-              <div className="mood-legend-item">
-                <div className="mood-color" style={{ backgroundColor: '#F44336' }}></div>
-                <span className="mood-name">매우 나쁨</span>
-              </div>
-            </div>
-            <div className="chart-container">
-              <Line data={lineChartData} options={lineChartOptions} />
             </div>
           </div>
-        </div>
 
-        <div className="chart-card">
-          <div className="chart-header">
-            <h3 className="chart-title">감정 분포</h3>
-            <button className="info-button">
-              <FaInfoCircle />
-            </button>
-          </div>
-          <div className="chart-body">
-            <div className="chart-container">
-              <Bar data={barChartData} options={barChartOptions} />
+          <div className="charts-grid">
+            <div className="chart-card">
+              <div className="chart-header">
+                <h3 className="chart-title">주간 기분 추이</h3>
+                <button className="info-button">
+                  <FaInfoCircle />
+                </button>
+              </div>
+              <div className="chart-body">
+                <div className="mood-legend">
+                  <div className="mood-legend-item">
+                    <div className="mood-color" style={{ backgroundColor: '#4CAF50' }}></div>
+                    <span className="mood-name">매우 좋음</span>
+                  </div>
+                  <div className="mood-legend-item">
+                    <div className="mood-color" style={{ backgroundColor: '#8BC34A' }}></div>
+                    <span className="mood-name">좋음</span>
+                  </div>
+                  <div className="mood-legend-item">
+                    <div className="mood-color" style={{ backgroundColor: '#FFC107' }}></div>
+                    <span className="mood-name">보통</span>
+                  </div>
+                  <div className="mood-legend-item">
+                    <div className="mood-color" style={{ backgroundColor: '#FF9800' }}></div>
+                    <span className="mood-name">나쁨</span>
+                  </div>
+                  <div className="mood-legend-item">
+                    <div className="mood-color" style={{ backgroundColor: '#F44336' }}></div>
+                    <span className="mood-name">매우 나쁨</span>
+                  </div>
+                </div>
+                <div className="chart-container">
+                  <Line data={lineChartData} options={lineChartOptions} />
+                </div>
+              </div>
+            </div>
+
+            <div className="chart-card">
+              <div className="chart-header">
+                <h3 className="chart-title">감정 분포</h3>
+                <button className="info-button">
+                  <FaInfoCircle />
+                </button>
+              </div>
+              <div className="chart-body">
+                <div className="chart-container">
+                  <Bar data={barChartData} options={barChartOptions} />
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="patterns-card">
-        <div className="patterns-header">
-          <h3 className="patterns-title">패턴 분석</h3>
-          <button className="filter-button">
-            <FaFilter className="filter-icon" />
-            필터
-          </button>
-        </div>
-        <div className="pattern-section">
-          <h4 className="pattern-title">주요 활동 패턴</h4>
-          <p className="pattern-text">
+          <div className="patterns-card">
+            <div className="patterns-header">
+              <h3 className="patterns-title">패턴 분석</h3>
+              <button className="filter-button">
+                <FaFilter className="filter-icon" />
+                필터
+              </button>
+            </div>
+            <div className="pattern-section">
+              <h4 className="pattern-title">주요 활동 패턴</h4>
+              <p className="pattern-text">
             {activityPatterns.patternDescription}
-          </p>
-        </div>
-        <div className="activity-grid">
-          <div>
-            <h4 className="activity-list-title">긍정적 활동</h4>
-            <ul className="activity-list">
+              </p>
+            </div>
+            <div className="activity-grid">
+              <div>
+                <h4 className="activity-list-title">긍정적 활동</h4>
+                <ul className="activity-list">
               {activityPatterns.positiveActivities.length > 0 ? (
                 activityPatterns.positiveActivities.map((activity, index) => (
                   <li key={index} className="activity-item">{activity}</li>
@@ -565,11 +565,11 @@ const HistoryPage: React.FC = () => {
               ) : (
                 <li className="activity-item">긍정적 활동이 기록되지 않았습니다.</li>
               )}
-            </ul>
-          </div>
-          <div>
-            <h4 className="activity-list-title">개선 필요 활동</h4>
-            <ul className="activity-list">
+                </ul>
+              </div>
+              <div>
+                <h4 className="activity-list-title">개선 필요 활동</h4>
+                <ul className="activity-list">
               {activityPatterns.negativeActivities.length > 0 ? (
                 activityPatterns.negativeActivities.map((activity, index) => (
                   <li key={index} className="activity-item">{activity}</li>
@@ -577,10 +577,10 @@ const HistoryPage: React.FC = () => {
               ) : (
                 <li className="activity-item">개선이 필요한 활동이 기록되지 않았습니다.</li>
               )}
-            </ul>
+                </ul>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
     </div>
   );
 };
