@@ -1,0 +1,22 @@
+[project]
+name = "ai-api"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Wonbin Kim",email = "kwb0711@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "dependency-injector (>=4.46.0,<5.0.0)",
+    "pydantic-settings (>=2.9.1,<3.0.0)",
+    "pydantic (>=2.11.4,<3.0.0)",
+    "fastapi (>=0.115.12,<0.116.0)",
+    "litellm (>=1.69.2,<2.0.0)",
+    "uvicorn (>=0.34.2,<0.35.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
