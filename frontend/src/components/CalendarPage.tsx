@@ -62,17 +62,6 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     }
   }, [currentUser?.id, fetchDiaries]);
 
-  // diaries를 기반으로 날짜별 감정 정보를 담은 객체 생성
-  const moodData = useMemo(() => {
-    const data: { [date: string]: string } = {};
-    diaries.forEach(diary => {
-      const date = new Date(diary.date);
-      const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-      data[dateStr] = diary.mood;
-    });
-    return data;
-  }, [diaries]);
-
   // 감정에 따른 색상 반환
   const getMoodColor = (mood: string) => {
     switch(mood) {
@@ -136,6 +125,18 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
     
+    // diaries를 기반으로 날짜별 감정 정보를 담은 객체 생성
+    const moodData: { [key: string]: string } = {};
+    if (diaries && Array.isArray(diaries)) {
+      diaries.forEach(diary => {
+        if (diary && diary.date) {
+          const date = new Date(diary.date);
+          const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+          moodData[dateStr] = diary.mood || 'neutral';
+        }
+      });
+    }
+    
     const grid = [];
     let dayCount = 1;
     
@@ -168,10 +169,10 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
         } else {
           // 현재 달의 날짜
           const dateStr = `${currentYear}-${currentMonth + 1}-${dayCount}`;
-          const mood = moodData[dateStr];
+          const mood = moodData[dateStr] || null;
           row.push({
             day: dayCount,
-            mood: mood || null,
+            mood: mood,
             isCurrentMonth: true
           });
           dayCount++;
