@@ -58,6 +58,7 @@ public class SecurityConfig {
                 authorize.requestMatchers(
                     "/",
                     "/login",
+                    "/api/chat/**",
                     "/swagger-ui/**",
                     "/swagger-resources/**",
                     "/api-docs"
