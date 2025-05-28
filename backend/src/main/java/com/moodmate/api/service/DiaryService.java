@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DiaryService {
     
+    private final AIService aiService;
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
 
@@ -32,11 +34,30 @@ public class DiaryService {
         
         if(existUser.isEmpty())
             throw new RuntimeException("Cannot Find User");
+        // User mockUser = User.builder()
+        //     .userId(1L)
+        //     .email("test@test.com")
+        //     .username("test")
+        //     .role(Role.USER)
+        //     .name("test")
+        //     .createdAt(LocalDateTime.now())
+        //     .modifiedAt(LocalDateTime.now())
+        //     .build();
     
+        String diaryId = UUID.randomUUID().toString();
+
+        AIService.EmotionResponseDTO emotionResponse = aiService.generateEmotionResponse(
+            dto.getUserId().toString(),
+            diaryId,
+            dto.getBody()
+        );
+
         Diary diary = Diary.builder()
             .body(dto.getBody())
             .user(existUser.get())
-            .emotion(Emotion.PENDING)
+            .aiResponse(emotionResponse.message)
+            .emotion(Emotion.from(emotionResponse.emotion))
+            //.emotion(Emotion.NO_EMOTION)
             .createdAt(LocalDateTime.now())
             .build();
 

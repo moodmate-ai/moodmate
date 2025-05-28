@@ -66,3 +66,7 @@ tasks.named('asciidoctor') {
   inputs.dir snippetsDir
   dependsOn test
 }
+
+tasks.named('bootRun') {
+  mainClass = 'com.moodmate.api.ApiApplication'
+}

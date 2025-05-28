@@ -1,6 +1,6 @@
 from ai_api.core.domain.port.llm import LLMPort
 from typing import Tuple
-
+import json
 
 class AnalyzeUsecase:
     
@@ -13,11 +13,11 @@ class AnalyzeUsecase:
         self.emotion_analysis_prompt = """
         You are an AI assistant that analyzes user's diary content to extract emotions.
         Please analyze the given diary content and select one of the following 5 emotions:
-        - 기쁨 (Joy)
-        - 슬픔 (Sadness)
-        - 분노 (Anger)
-        - 두려움 (Fear)
-        - 감정없음 (No emotion)
+        - JOY
+        - SADNESS
+        - ANGER
+        - FEAR
+        - NO_EMOTION
 
         You must respond ONLY in the following JSON format:
         {"emotion": "selected_emotion"}
@@ -38,17 +38,20 @@ class AnalyzeUsecase:
         """
         
         emotion = await self.llm_port.generate_response(
-            [
+            messages=[
                 {"role": "system", "content": self.emotion_analysis_prompt},
                 {"role": "user", "content": content}
-            ]
+            ],
+            response_format={"type": "json_object"}
         )
+        emotion = json.loads(emotion)["emotion"]
         
         first_message = await self.llm_port.generate_response(
-            [
+            messages=[
                 {"role": "system", "content": self.first_message_prompt},
                 {"role": "user", "content": content}
-            ]
+            ],
+            response_format={"type": "json_object"}
         )
         
         return emotion, first_message
