@@ -4,8 +4,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import './SignupPage.css';
 
 interface SignupPageProps {
-  onSignup: (name: string, username: string, password: string, confirmPassword: string) => void;
-  onGoogleSignup: () => void;
+  onGoogleSignup: (jwt: string) => void;
 }
 
 const SignupPage: React.FC<SignupPageProps> = ({ onGoogleSignup }) => {
@@ -22,9 +21,9 @@ const SignupPage: React.FC<SignupPageProps> = ({ onGoogleSignup }) => {
         <div className="google-signup-button">
           <GoogleLogin
             onSuccess={(credentialResponse) => {
-              console.log(credentialResponse);
-              onGoogleSignup();
-                        }}
+              if(credentialResponse.credential) 
+                onGoogleSignup(credentialResponse.credential);
+            }}
             onError={() => {
               console.log('Google Sign Up Failed');
             }}

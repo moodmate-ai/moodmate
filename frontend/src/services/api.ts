@@ -32,9 +32,14 @@ export interface Diary {
   userId: number;
 }
 
+export interface DiaryRequest {
+  body: string;
+  userId: number;
+}
+
 export const diaryApi = {
   // Create
-  createDiary: async (diary: Omit<Diary, 'id'>) => {
+  createDiary: async (diary: DiaryRequest) => {
     const response = await api.post('/diary/create', diary);
     console.log(response.data);
     return response.data;

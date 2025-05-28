@@ -2,10 +2,10 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
+import { jwtDecode } from 'jwt-decode'; 
 
 interface LoginPageProps {
-  onLogin: (username: string, password: string) => void;
-  onGoogleLogin: () => void;
+  onGoogleLogin: (jwt: string) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
@@ -23,8 +23,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
             onSuccess={(credentialResponse) => {
               const credential = credentialResponse.credential;
               if(credential) {
-                localStorage.setItem('googleToken', credential);
-                onGoogleLogin(); 
+                onGoogleLogin(credential); 
               }
             }}
             onError={() => {

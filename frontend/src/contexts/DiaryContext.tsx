@@ -49,7 +49,7 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setError(null);
     try {
       const newDiary = await diaryApi.createDiary({
-        ...diary,
+        body: diary.content,
         userId: currentUser.id
       });
       setDiaries(prevDiaries => [...prevDiaries, newDiary]);
