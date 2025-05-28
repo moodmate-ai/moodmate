@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { Diary, diaryApi } from '../services/api';
 import { useAuth } from './AuthContext';
 
@@ -20,7 +20,7 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const [error, setError] = useState<string | null>(null);
   const { currentUser } = useAuth();
 
-  const fetchDiaries = async () => {
+  const fetchDiaries = useCallback(async () => {
     if (!currentUser) {
       setError('사용자가 로그인되어 있지 않습니다.');
       return;
@@ -30,14 +30,23 @@ export const DiaryProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setError(null);
     try {
       const response = await diaryApi.getDiariesByUserId(currentUser.id);
-      setDiaries(response);
+      console.log(response);
+      setDiaries(response.map(diary => ({
+        id: diary.diaryId.toString(),
+        date: diary.createdAt,
+        mood: diary.emotion,
+        moodEmoji: '',
+        content: diary.body,
+        growth: 0,
+        userId: currentUser.id
+      })));
     } catch (error) {
       setError('일기 데이터를 가져오는데 실패했습니다.');
       console.error('Failed to fetch diaries:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUser]);
 
   const addDiary = async (diary: Omit<Diary, 'id'>) => {
     if (!currentUser) {

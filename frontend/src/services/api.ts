@@ -37,6 +37,16 @@ export interface DiaryRequest {
   userId: number;
 }
 
+export interface DiaryResponse {
+  diaryId: number;
+  body: string;
+  userId: number;
+  emotion: string;
+  aiResponse: string;
+  createdAt: string;
+  modifiedAt?: string;
+}
+
 export const diaryApi = {
   // Create
   createDiary: async (diary: DiaryRequest) => {
@@ -53,7 +63,7 @@ export const diaryApi = {
 
   getDiariesByUserId: async (userId: number) => {
     const response = await api.get(`/diary/searchuserid/${userId}`);
-    return response.data;
+    return response.data as DiaryResponse[];
   },
 
   // Update
