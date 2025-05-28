@@ -34,7 +34,7 @@ public class Diary {
     @Column(nullable = false, unique = true)
     private Long diaryId;
 
-    @Column(length = 10000)
+    @Column(columnDefinition = "TEXT")
     private String body;
 
     @ManyToOne(optional = false)
@@ -42,8 +42,11 @@ public class Diary {
     private User user;
 
     @Enumerated
-    @Column
+    @Column()
     private Emotion emotion;
+
+    @Column(columnDefinition = "TEXT")
+    private String aiResponse;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

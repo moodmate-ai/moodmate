@@ -5,10 +5,33 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDateTime;
+import java.util.List;
 
 public class ChatDTO {
+
+    @Data
+    @Builder
+    @Getter
+    @Setter
+    public static class ChatMessageDTO {
+        @Schema(
+                name = "role",
+                description = "메시지 역할",
+                type = "String",
+                requiredMode = Schema.RequiredMode.REQUIRED,
+                example = "user"
+        )
+        private String role;
+
+        @Schema(
+                name = "content",
+                description = "메시지 내용",
+                type = "String",
+                requiredMode = Schema.RequiredMode.REQUIRED,
+                example = "안녕하세요"
+        )
+        private String content;
+    }
 
     @Data
     @Builder
@@ -34,13 +57,12 @@ public class ChatDTO {
         private Long diaryId;
 
         @Schema(
-                name = "message",
-                description = "사용자가 보낸 메시지",
-                type = "String",
-                requiredMode = Schema.RequiredMode.REQUIRED,
-                example = "안녕하세요"
+                name = "messages",
+                description = "메시지 목록",
+                type = "List",
+                requiredMode = Schema.RequiredMode.REQUIRED
         )
-        private String message;
+        private List<ChatMessageDTO> messages;
     }
 
     @Data

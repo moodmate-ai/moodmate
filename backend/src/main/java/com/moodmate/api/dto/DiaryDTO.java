@@ -75,10 +75,19 @@ public class DiaryDTO {
             name = "emotion",
             description = "감정 정보",
             type = "String",
-            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            requiredMode = Schema.RequiredMode.REQUIRED,
             example = "HAPPY"
         )
         private Emotion emotion;
+
+        @Schema(
+            name = "aiResponse",
+            description = "AI 응답",
+            type = "String",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            example = "응답 내용."
+        )
+        private String aiResponse;
 
         @Schema(
             name = "createdAt",
@@ -106,6 +115,7 @@ public class DiaryDTO {
                 .body(diary.getBody())
                 .userId(diary.getUser().getUserId())
                 .emotion(diary.getEmotion())
+                .aiResponse(diary.getAiResponse())
                 .createdAt(diary.getCreatedAt())
                 .modifiedAt(diary.getModifiedAt())
                 .build();

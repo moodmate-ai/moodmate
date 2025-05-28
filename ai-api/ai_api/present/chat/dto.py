@@ -1,9 +1,5 @@
 from pydantic import BaseModel, Field
-
-
-class ChatMessage(BaseModel):
-    role: str = Field(..., description="Role")
-    content: str = Field(..., description="Content")
+from ai_api.core.domain.entity.chat import ChatMessage
 
 
 class ChatRequest(BaseModel):
