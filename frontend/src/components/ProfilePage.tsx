@@ -2,6 +2,8 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Camera, Save, User, Moon, Sun, Monitor, Trash2, ArrowLeft } from 'lucide-react';
 import './ProfilePage.css';
+import { useAuth } from '../contexts/AuthContext';
+import { userApi, type UserRequestDTO } from '../services';
 
 interface ProfilePageProps {
   userName: string;
@@ -17,10 +19,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onThemeChange 
 }) => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   const [name, setName] = useState(userName);
   const [image, setImage] = useState(profileImage);
   const [theme, setTheme] = useState('light'); // 'light', 'dark'
   const [showPictureModal, setShowPictureModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const presetImages = [
@@ -32,12 +36,35 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     '/avatars/avatar6.png',
   ];
 
-  const handleSave = () => {
-    onUpdateProfile(name, image);
-    if (onThemeChange) {
-      onThemeChange(theme);
+  const handleSave = async () => {
+    if (!currentUser?.userId) {
+      alert('사용자 정보를 찾을 수 없습니다.');
+      return;
     }
-    alert('프로필이 성공적으로 업데이트되었습니다!');
+
+    setIsLoading(true);
+    try {
+      const userRequest: UserRequestDTO = {
+        email: currentUser.email || '',
+        username: currentUser.username || '',
+        role: currentUser.role || 'USER',
+        name: name
+      };
+
+      await userApi.updateUser(currentUser.userId, userRequest);
+      onUpdateProfile(name, image);
+      
+      if (onThemeChange) {
+        onThemeChange(theme);
+      }
+      
+      alert('프로필이 성공적으로 업데이트되었습니다!');
+    } catch (error) {
+      console.error('프로필 업데이트 실패:', error);
+      alert('프로필 업데이트에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,10 +86,24 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     setShowPictureModal(false);
   };
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
+    if (!currentUser?.userId) {
+      alert('사용자 정보를 찾을 수 없습니다.');
+      return;
+    }
+
     if (window.confirm('정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
-      alert('계정이 삭제되었습니다.');
-      navigate('/');
+      setIsLoading(true);
+      try {
+        await userApi.deleteUser(currentUser.userId);
+        alert('계정이 삭제되었습니다.');
+        navigate('/');
+      } catch (error) {
+        console.error('계정 삭제 실패:', error);
+        alert('계정 삭제에 실패했습니다. 다시 시도해주세요.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -107,6 +148,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                 value={name} 
                 onChange={(e) => setName(e.target.value)} 
                 placeholder="이름을 입력하세요"
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -122,7 +164,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           <div className="section-content">
             <div 
               className={`theme-option ${theme === 'light' ? 'selected' : ''}`}
-              onClick={() => setTheme('light')}
+              onClick={() => !isLoading && setTheme('light')}
             >
               <div className="theme-icon">
                 <Sun size={20} />
@@ -134,7 +176,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
             <div 
               className={`theme-option ${theme === 'dark' ? 'selected' : ''}`}
-              onClick={() => setTheme('dark')}
+              onClick={() => !isLoading && setTheme('dark')}
             >
               <div className="theme-icon">
                 <Moon size={20} />
@@ -150,9 +192,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         <button 
           className="save-button"
           onClick={handleSave}
+          disabled={isLoading}
         >
           <Save size={16} />
-          저장하기
+          {isLoading ? '저장 중...' : '저장하기'}
         </button>
         
         <div className="danger-section">
@@ -163,9 +206,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           <button 
             className="delete-button"
             onClick={handleDeleteAccount}
+            disabled={isLoading}
           >
             <Trash2 size={16} />
-            계정 삭제하기
+            {isLoading ? '삭제 중...' : '계정 삭제하기'}
           </button>
         </div>
       </div>
@@ -200,16 +244,16 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
               
               <div className="preset-section">
-                <h3>프로필 이미지 선택</h3>
-                <div className="preset-pictures">
-                  {presetImages.map((preset, index) => (
-                    <div 
+                <h3 className="preset-title">미리 설정된 아바타</h3>
+                <div className="preset-grid">
+                  {presetImages.map((presetImage, index) => (
+                    <img 
                       key={index}
-                      className={`preset-picture ${image === preset ? 'selected' : ''}`}
-                      onClick={() => handleSelectPreset(preset)}
-                    >
-                      <img src={preset} alt={`Preset ${index + 1}`} />
-                    </div>
+                      src={presetImage} 
+                      alt={`Avatar ${index + 1}`}
+                      className="preset-image"
+                      onClick={() => handleSelectPreset(presetImage)}
+                    />
                   ))}
                 </div>
               </div>

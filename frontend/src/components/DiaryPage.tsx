@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, BarChart2, Trash2, Edit3, Smile, Save, Calendar, MessageCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useDiary } from '../contexts/DiaryContext';
-import { diaryApi, Diary } from '../services/api';
+import { diaryApi, type DiaryResponseDTO, type DiaryRequestDTO } from '../services';
 import './DiaryPage.css';
 import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
@@ -20,14 +19,17 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useAuth();
-  const { diaries, addDiary, updateDiary, deleteDiary, isLoading, error, fetchDiaries } = useDiary();
+  const [diaries, setDiaries] = useState<DiaryResponseDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
   // 상태 관리
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentMood, setCurrentMood] = useState('neutral');
+  const [currentMood, setCurrentMood] = useState<'HAPPY' | 'SAD' | 'ANGRY' | 'NEUTRAL' | 'ANXIOUS'>('NEUTRAL');
   const [content, setContent] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [editingDiaryId, setEditingDiaryId] = useState<string | null>(null);
+  const [editingDiaryId, setEditingDiaryId] = useState<number | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerDate, setDatePickerDate] = useState(new Date());
   
@@ -44,12 +46,27 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
     }
   }, [location.state]);
 
+  // 일기 데이터 가져오기
+  const fetchDiaries = async () => {
+    if (!currentUser?.userId) return;
+    
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await diaryApi.getDiariesByUserId(currentUser.userId);
+      setDiaries(data);
+    } catch (error) {
+      console.error('일기 데이터를 가져오는데 실패했습니다:', error);
+      setError('일기 데이터를 가져오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 컴포넌트 마운트 시 일기 데이터 가져오기
   useEffect(() => {
-    if (currentUser?.id) {
-      fetchDiaries();
-    }
-  }, [currentUser?.id]);
+    fetchDiaries();
+  }, [currentUser?.userId]);
   
   // 월 이름 배열
   const months = [
@@ -78,25 +95,25 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   };
   
   // 감정에 따른 색상 반환
-  const getMoodColor = (mood: string) => {
-    switch(mood) {
-      case 'happy': return 'happy';
-      case 'sad': return 'sad';
-      case 'angry': return 'angry';
-      case 'neutral': return 'neutral';
-      case 'anxious': return 'anxious';
+  const getMoodColor = (emotion: string) => {
+    switch(emotion) {
+      case 'HAPPY': return 'happy';
+      case 'SAD': return 'sad';
+      case 'ANGRY': return 'angry';
+      case 'NEUTRAL': return 'neutral';
+      case 'ANXIOUS': return 'anxious';
       default: return 'neutral';
     }
   };
   
   // 감정 이모티콘 반환
-  const getMoodEmoji = (mood: string) => {
-    switch(mood) {
-      case 'happy': return '😊';
-      case 'sad': return '😢';
-      case 'angry': return '😠';
-      case 'neutral': return '😌';
-      case 'anxious': return '😰';
+  const getMoodEmoji = (emotion: string) => {
+    switch(emotion) {
+      case 'HAPPY': return '😊';
+      case 'SAD': return '😢';
+      case 'ANGRY': return '😠';
+      case 'NEUTRAL': return '😌';
+      case 'ANXIOUS': return '😰';
       default: return '😌';
     }
   };
@@ -129,53 +146,52 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   };
 
   const handleSave = async () => {
-    if (!currentUser?.id) return;
+    if (!currentUser?.userId) return;
 
-    const diaryData = {
-      date: selectedDate,
-      mood: currentMood,
-      moodEmoji: getMoodEmoji(currentMood),
-      content,
-      growth: 0,
-      userId: currentUser.id
+    const diaryRequest: DiaryRequestDTO = {
+      body: content,
+      userId: currentUser.userId
     };
 
+    setIsLoading(true);
     try {
       if (editingDiaryId) {
-        await updateDiary(editingDiaryId, diaryData);
+        await diaryApi.updateDiary(editingDiaryId, diaryRequest);
       } else {
-        await addDiary(diaryData);
+        await diaryApi.createDiary(diaryRequest);
       }
+      await fetchDiaries(); // 새로고침
+      setContent(''); // 입력 필드 초기화
+      setEditingDiaryId(null);
       navigate('/calendar');
     } catch (error) {
       console.error('일기 저장에 실패했습니다:', error);
+      setError('일기 저장에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleDelete = async () => {
-    if (!editingDiaryId) return;
+  const handleDelete = async (diaryId: number) => {
+    if (!window.confirm('정말로 이 일기를 삭제하시겠습니까?')) return;
 
+    setIsLoading(true);
     try {
-      await deleteDiary(editingDiaryId);
-      navigate('/calendar');
+      await diaryApi.deleteDiary(diaryId);
+      await fetchDiaries(); // 새로고침
     } catch (error) {
       console.error('일기 삭제에 실패했습니다:', error);
+      setError('일기 삭제에 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // 분석 페이지로 이동
-  const handleAnalysis = (diary: Diary) => {
-    navigate('/analysis', { state: { diary } });
-  };
-
-  const handleEdit = (diaryId: string) => {
-    const diaryToEdit = diaries.find((d: Diary) => d.id === diaryId);
-    if (diaryToEdit) {
-      setSelectedDate(diaryToEdit.date);
-      setCurrentMood(diaryToEdit.mood);
-      setContent(diaryToEdit.content);
-      setEditingDiaryId(diaryId);
-    }
+  const handleEdit = (diary: DiaryResponseDTO) => {
+    setSelectedDate(diary.createdAt.split('T')[0]);
+    setCurrentMood(diary.emotion);
+    setContent(diary.body);
+    setEditingDiaryId(diary.diaryId);
   };
 
   const handleDatePickerClick = (e: React.MouseEvent) => {
@@ -190,14 +206,14 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   };
 
   // AI 챗봇과 대화 시작
-  const handleStartChat = (diary: Diary) => {
+  const handleStartChat = (diary: DiaryResponseDTO) => {
     window.scrollTo(0, 0);
-    navigate('/chats', { state: { diary, date: diary.date } });
+    navigate('/chats', { state: { diary, date: diary.createdAt } });
   };
 
   // 현재 선택된 날짜의 일기 목록
-  const currentDateDiaries = diaries.filter((entry: Diary) => {
-    const entryDate = new Date(entry.date);
+  const currentDateDiaries = diaries.filter((entry: DiaryResponseDTO) => {
+    const entryDate = new Date(entry.createdAt);
     const selectedDateObj = new Date(selectedDate);
     return (
       entryDate.getFullYear() === selectedDateObj.getFullYear() &&
@@ -343,7 +359,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
               <div className="mood-selection">
                 <p>오늘의 기분</p>
                 <div className="mood-buttons">
-                  {['happy', 'neutral', 'sad', 'angry', 'anxious'].map((mood) => (
+                  {(['HAPPY', 'NEUTRAL', 'SAD', 'ANGRY', 'ANXIOUS'] as const).map((mood) => (
                     <button 
                       key={mood}
                       className={`mood-button ${currentMood === mood ? 'active' : ''} ${getMoodColor(mood)}`}
@@ -366,7 +382,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
               
               {/* 저장 버튼 */}
               <div className="save-button-container">
-                <button className="save-button" onClick={handleSave}>
+                <button className="save-button" onClick={handleSave} disabled={isLoading}>
                   <Save size={20} />
                   <span>{editingDiaryId ? '수정하기' : '저장하기'}</span>
                 </button>
@@ -377,30 +393,30 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
           {/* 기존 일기 목록 */}
           <div className="diary-list">
             {currentDateDiaries.map((entry) => (
-              <div key={entry.id}>
+              <div key={entry.diaryId}>
                 <div 
-                  className={`diary-card ${getMoodColor(entry.mood)}`}
+                  className={`diary-card ${getMoodColor(entry.emotion)}`}
                 >
                   {/* 일기 헤더 */}
                   <div className="diary-card-header">
                     <div className="diary-mood">
                       <div className="mood-circle">
-                        {entry.moodEmoji}
+                        {getMoodEmoji(entry.emotion)}
                       </div>
-                      <p>{entry.mood}</p>
+                      <p>{entry.emotion}</p>
                       <div className="diary-date">
-                        {formatDate(entry.date)}
+                        {formatDate(entry.createdAt)}
                       </div>
                     </div>
                   </div>
                   
                   <div className="diary-content">
-                    <p>{entry.content}</p>
+                    <p>{entry.body}</p>
                     
                     {/* 일기 푸터 */}
                     <div className="diary-footer">
                       <div className="growth-indicator">
-                        {getMoodEmoji(entry.mood)}
+                        {getMoodEmoji(entry.emotion)}
                         <span>AI의 감정 분석</span>
                       </div>
                       
@@ -413,13 +429,13 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                         </button>
                         <button 
                           className="action-button"
-                          onClick={() => handleEdit(entry.id)}
+                          onClick={() => handleEdit(entry)}
                         >
                           <Edit3 size={18} />
                         </button>
                         <button 
                           className="action-button delete"
-                          onClick={() => handleDelete()}
+                          onClick={() => handleDelete(entry.diaryId)}
                         >
                           <Trash2 size={18} />
                         </button>
@@ -436,14 +452,16 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                       <div className="comment-body">
                         <div className="comment-bubble">
                           <p className="comment-content">
-                            {entry.mood === 'happy' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
-                             entry.mood === 'sad' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
-                             entry.mood === 'angry' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
-                             entry.mood === 'anxious' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
-                             '오늘 하루는 어떠셨나요? 함께 이야기를 나눠볼까요?'}
+                            {entry.aiResponse || (
+                              entry.emotion === 'HAPPY' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
+                              entry.emotion === 'SAD' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
+                              entry.emotion === 'ANGRY' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
+                              entry.emotion === 'ANXIOUS' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
+                              '오늘 하루는 어떠셨나요? 함께 이야기를 나눠볼까요?'
+                            )}
                           </p>
                           <div className="comment-footer">
-                            <div className="comment-time">{getTimeAgo(entry.date)}</div>
+                            <div className="comment-time">{getTimeAgo(entry.createdAt)}</div>
                           </div>
                         </div>
                       </div>

@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useDiary } from '../contexts/DiaryContext';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight, FaPlus, FaRegCalendarAlt } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import './CalendarPage.css';
 import { ChevronLeft, ChevronRight, BarChart2, Edit3, Trash2, MessageCircle } from 'lucide-react';
-import { diaryApi, Diary } from '../services/api';
+import { diaryApi, type DiaryResponseDTO } from '../services';
 
 interface CalendarPageProps {
   isLoggedIn: boolean;
@@ -19,7 +18,8 @@ interface CalendarPageProps {
 
 const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLogin, onLogout }) => {
   const { currentUser } = useAuth();
-  const { diaries, fetchDiaries, deleteDiary } = useDiary();
+  const [diaries, setDiaries] = useState<DiaryResponseDTO[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -42,46 +42,53 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   
   // 감정 타입 배열
   const moodTypes = [
-    { type: 'happy', label: '행복', emoji: '😊' },
-    { type: 'sad', label: '슬픔', emoji: '😢' },
-    { type: 'angry', label: '화남', emoji: '😠' },
-    { type: 'anxious', label: '불안', emoji: '😰' },
-    { type: 'neutral', label: '보통', emoji: '😌' }
+    { type: 'HAPPY', label: '행복', emoji: '😊' },
+    { type: 'SAD', label: '슬픔', emoji: '😢' },
+    { type: 'ANGRY', label: '화남', emoji: '😠' },
+    { type: 'ANXIOUS', label: '불안', emoji: '😰' },
+    { type: 'NEUTRAL', label: '보통', emoji: '😌' }
   ];
+
+  // 일기 데이터 가져오기
+  const fetchDiaries = async () => {
+    if (!currentUser?.userId) return;
+    
+    setIsLoading(true);
+    try {
+      const data = await diaryApi.getDiariesByUserId(currentUser.userId);
+      setDiaries(data);
+    } catch (error) {
+      console.error('일기 데이터를 가져오는데 실패했습니다:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 컴포넌트 마운트 시 일기 데이터 가져오기
   useEffect(() => {
-    if (currentUser?.id) {
-      diaryApi.getDiariesByUserId(currentUser.id)
-        .then(data => {
-          fetchDiaries();
-        })
-        .catch(error => {
-          console.error('일기 데이터를 가져오는데 실패했습니다:', error);
-        });
-    }
-  }, [currentUser?.id, fetchDiaries]);
+    fetchDiaries();
+  }, [currentUser?.userId]);
 
   // 감정에 따른 색상 반환
-  const getMoodColor = (mood: string) => {
-    switch(mood) {
-      case 'happy': return 'happy';
-      case 'sad': return 'sad';
-      case 'angry': return 'angry';
-      case 'neutral': return 'neutral';
-      case 'anxious': return 'anxious';
+  const getMoodColor = (emotion: string) => {
+    switch(emotion) {
+      case 'HAPPY': return 'happy';
+      case 'SAD': return 'sad';
+      case 'ANGRY': return 'angry';
+      case 'NEUTRAL': return 'neutral';
+      case 'ANXIOUS': return 'anxious';
       default: return 'neutral';
     }
   };
 
   // 감정 이모티콘 반환
-  const getMoodEmoji = (mood: string) => {
-    switch(mood) {
-      case 'happy': return '😊';
-      case 'sad': return '😢';
-      case 'angry': return '😠';
-      case 'neutral': return '😌';
-      case 'anxious': return '😰';
+  const getMoodEmoji = (emotion: string) => {
+    switch(emotion) {
+      case 'HAPPY': return '😊';
+      case 'SAD': return '😢';
+      case 'ANGRY': return '😠';
+      case 'NEUTRAL': return '😌';
+      case 'ANXIOUS': return '😰';
       default: return '😌';
     }
   };
@@ -129,10 +136,10 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     const moodData: { [key: string]: string } = {};
     if (diaries && Array.isArray(diaries)) {
       diaries.forEach(diary => {
-        if (diary && diary.date) {
-          const date = new Date(diary.date);
+        if (diary && diary.createdAt) {
+          const date = new Date(diary.createdAt);
           const dateStr = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-          moodData[dateStr] = diary.mood || 'neutral';
+          moodData[dateStr] = diary.emotion || 'NEUTRAL';
         }
       });
     }
@@ -188,21 +195,21 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   const calendarGrid = generateCalendarGrid();
   
   // 일기 분석 페이지로 이동
-  const handleAnalysis = (diary: any) => {
+  const handleAnalysis = (diary: DiaryResponseDTO) => {
     // 분석 페이지로 이동하는 로직
     console.log('분석 페이지로 이동:', diary);
   };
 
   // 일기 수정
-  const handleEdit = (diaryId: string) => {
-    const diaryToEdit = diaries.find(d => d.id === diaryId);
+  const handleEdit = (diaryId: number) => {
+    const diaryToEdit = diaries.find(d => d.diaryId === diaryId);
     if (diaryToEdit) {
       navigate('/diary', { 
         state: { 
           editingDiaryId: diaryId,
-          selectedDate: diaryToEdit.date,
-          currentMood: diaryToEdit.mood,
-          content: diaryToEdit.content,
+          selectedDate: diaryToEdit.createdAt,
+          currentMood: diaryToEdit.emotion,
+          content: diaryToEdit.body,
           isEditing: true
         } 
       });
@@ -210,10 +217,11 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   };
 
   // 일기 삭제
-  const handleDelete = async (diaryId: string) => {
+  const handleDelete = async (diaryId: number) => {
     if (window.confirm('정말로 이 일기를 삭제하시겠습니까?')) {
       try {
-        await deleteDiary(diaryId);
+        await diaryApi.deleteDiary(diaryId);
+        await fetchDiaries(); // 새로고침
       } catch (error) {
         console.error('Failed to delete diary:', error);
         alert('일기 삭제에 실패했습니다. 다시 시도해주세요.');
@@ -222,13 +230,13 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   };
 
   // AI 챗봇과 대화 시작
-  const handleStartChat = (diary: Diary) => {
+  const handleStartChat = (diary: DiaryResponseDTO) => {
     window.scrollTo(0, 0);
-    navigate('/chats', { state: { diary, date: diary.date } });
+    navigate('/chats', { state: { diary, date: diary.createdAt } });
   };
 
   // 일기 카드로 스크롤하는 함수
-  const scrollToDiary = (diaryId: string) => {
+  const scrollToDiary = (diaryId: number) => {
     const diaryElement = document.getElementById(`diary-${diaryId}`);
     if (diaryElement) {
       diaryElement.scrollIntoView({ 
@@ -247,7 +255,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   // 날짜 클릭 핸들러
   const handleDateClick = (date: Date) => {
     const diary = diaries.find(diary => {
-      const diaryDate = new Date(diary.date);
+      const diaryDate = new Date(diary.createdAt);
       return (
         diaryDate.getFullYear() === date.getFullYear() &&
         diaryDate.getMonth() === date.getMonth() &&
@@ -256,7 +264,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
     });
 
     if (diary) {
-      scrollToDiary(diary.id);
+      scrollToDiary(diary.diaryId);
     }
   };
 
@@ -277,7 +285,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
 
   // 현재 월의 일기 목록 가져오기
   const currentMonthDiaries = diaries.filter(diary => {
-    const diaryDate = new Date(diary.date);
+    const diaryDate = new Date(diary.createdAt);
     return (
       diaryDate.getFullYear() === currentYear &&
       diaryDate.getMonth() === currentMonth
@@ -304,7 +312,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
       
       // 해당 날짜의 일기 찾기
       const diary = diaries.find(d => {
-        const diaryDate = new Date(d.date);
+        const diaryDate = new Date(d.createdAt);
         return (
           diaryDate.getFullYear() === date.getFullYear() &&
           diaryDate.getMonth() === date.getMonth() &&
@@ -315,7 +323,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
       if (diary) {
         // 일기로 스크롤
         setTimeout(() => {
-          scrollToDiary(diary.id);
+          scrollToDiary(diary.diaryId);
         }, 100);
       }
     }
@@ -405,7 +413,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
             row.map((cell, cellIndex) => {
               const date = new Date(currentYear, currentMonth, cell.day);
               const hasDiary = diaries.some(diary => {
-                const diaryDate = new Date(diary.date);
+                const diaryDate = new Date(diary.createdAt);
                 return (
                   diaryDate.getFullYear() === date.getFullYear() &&
                   diaryDate.getMonth() === date.getMonth() &&
@@ -414,7 +422,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
               });
 
               const diary = diaries.find(diary => {
-                const diaryDate = new Date(diary.date);
+                const diaryDate = new Date(diary.createdAt);
                 return (
                   diaryDate.getFullYear() === date.getFullYear() &&
                   diaryDate.getMonth() === date.getMonth() &&
@@ -427,7 +435,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
                   key={`${rowIndex}-${cellIndex}`} 
                   className={`calendar-cell ${
                     cell.isCurrentMonth ? '' : 'other-month'
-                  } ${hasDiary ? 'has-diary' : ''} ${diary ? diary.mood : ''} ${
+                  } ${hasDiary ? 'has-diary' : ''} ${diary ? diary.emotion.toLowerCase() : ''} ${
                     isToday(date) ? 'today' : ''
                   }`}
                   onClick={() => handleDateClick(date)}
@@ -437,7 +445,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
                       <div className="calendar-day-number">{cell.day}</div>
                       {hasDiary && (
                         <div className="calendar-mood-emoji">
-                          {getMoodEmoji(diary?.mood || 'neutral')}
+                          {getMoodEmoji(diary?.emotion || 'NEUTRAL')}
                         </div>
                       )}
                     </>
@@ -452,7 +460,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
         <div className="calendar-mood-legend">
           {moodTypes.map(({ type, label }) => (
             <div key={type} className="calendar-legend-item">
-              <div className={`calendar-legend-color ${type}`}></div>
+              <div className={`calendar-legend-color ${type.toLowerCase()}`}></div>
               <span className="calendar-legend-text">{label}</span>
             </div>
           ))}
@@ -462,31 +470,31 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
       {/* 일기카드 목록 */}
       <div className="diary-list">
         {currentMonthDiaries
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .map((entry) => (
             <div 
-              key={entry.id} 
-              id={`diary-${entry.id}`}
-              className={`diary-card ${getMoodColor(entry.mood)}`}
+              key={entry.diaryId} 
+              id={`diary-${entry.diaryId}`}
+              className={`diary-card ${getMoodColor(entry.emotion)}`}
             >
               <div className="diary-card-header">
                 <div className="diary-mood">
                   <div className="mood-circle">
-                    {getMoodEmoji(entry.mood)}
+                    {getMoodEmoji(entry.emotion)}
                   </div>
-                  <p>{entry.mood}</p>
+                  <p>{entry.emotion}</p>
                   <div className="diary-date">
-                    {formatDate(entry.date)}
+                    {formatDate(entry.createdAt)}
                   </div>
                 </div>
               </div>
               
               <div className="diary-content">
-                <p>{entry.content}</p>
+                <p>{entry.body}</p>
                 
                 <div className="diary-footer">
                   <div className="growth-indicator">
-                    {getMoodEmoji(entry.mood)}
+                    {getMoodEmoji(entry.emotion)}
                     <span>AI의 감정 분석</span>
                   </div>
                   
@@ -499,13 +507,13 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
                     </button>
                     <button 
                       className="action-button"
-                      onClick={() => handleEdit(entry.id)}
+                      onClick={() => handleEdit(entry.diaryId)}
                     >
                       <Edit3 size={18} />
                     </button>
                     <button 
                       className="action-button delete"
-                      onClick={() => handleDelete(entry.id)}
+                      onClick={() => handleDelete(entry.diaryId)}
                     >
                       <Trash2 size={18} />
                     </button>

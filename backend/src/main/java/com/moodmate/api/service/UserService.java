@@ -58,6 +58,16 @@ public class UserService {
     }
 
     @Transactional
+    public UserResponseDTO readUserByEmail(String email) {
+        Optional<User> existUser = userRepository.findByEmail(email);
+
+        if(existUser.isEmpty())
+            return null;
+        else
+            return UserResponseDTO.fromEntity(existUser.get());        
+    }
+
+    @Transactional
     public UserResponseDTO readUserByUsername(String username) {
         Optional<User> existUser = userRepository.findByUsername(username);
 

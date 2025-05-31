@@ -1,15 +1,22 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import './LoginPage.css';
 
 interface LoginPageProps {
-  onLogin: (username: string, password: string) => void;
-  onGoogleLogin: () => void;
+  onGoogleLogin: (jwt: string) => void;
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
-  const navigate = useNavigate();
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    const credential = credentialResponse.credential;
+    if (!credential) return;
+
+    try {
+      await onGoogleLogin(credential);
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
 
   return (
     <div className="login-container">
@@ -20,13 +27,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
 
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
           <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              const credential = credentialResponse.credential;
-              if(credential) {
-                localStorage.setItem('googleToken', credential);
-                onGoogleLogin(); 
-              }
-            }}
+            onSuccess={handleGoogleSuccess}
             onError={() => {
               console.log("Google Login Failed");
             }}
