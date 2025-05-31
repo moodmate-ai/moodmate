@@ -19,7 +19,8 @@ on:
       - 'backend/**'
       - 'frontend/**'
       - 'ai-api/**'
-  workflow_dispatch: 
+  # workflow_dispatch: 
+
 
 # 2. Define one or more jobs
 jobs:
