@@ -9,6 +9,7 @@ on:
       - main # Trigger on pushes to the 'main' branch
       - feat/gh-action
     paths:
+      - '**'
       - 'backend/**'
       - 'frontend/**'
       - 'ai-api/**'
