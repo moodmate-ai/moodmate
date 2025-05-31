@@ -16,8 +16,7 @@ import './HistoryPage.css';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart2, TrendingUp, Brain, Heart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useDiary } from '../contexts/DiaryContext';
-import { diaryApi } from '../services/api';
+import { diaryApi, type DiaryResponseDTO } from '../services';
 
 ChartJS.register(
   CategoryScale,
@@ -32,24 +31,16 @@ ChartJS.register(
 
 interface TimeOfDayData {
   name: string;
-  happy: number;
-  neutral: number;
-  anxious: number;
-  sad: number;
-  angry: number;
-}
-
-interface Diary {
-  id: number;
-  userId: number;
-  date: string;
-  mood: string;
-  content: string;
+  HAPPY: number;
+  NEUTRAL: number;
+  ANXIOUS: number;
+  SAD: number;
+  ANGRY: number;
 }
 
 const HistoryPage: React.FC = () => {
   const { currentUser } = useAuth();
-  const { diaries } = useDiary();
+  const [diaries, setDiaries] = useState<DiaryResponseDTO[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerDate, setDatePickerDate] = useState(new Date());
@@ -82,19 +73,21 @@ const HistoryPage: React.FC = () => {
   });
 
   useEffect(() => {
-    if (currentUser?.id) {
-      diaryApi.getDiariesByUserId(currentUser.id)
-        .then((data: Diary[]) => {
+    if (currentUser?.userId) {
+      diaryApi.getDiariesByUserId(currentUser.userId)
+        .then((data: DiaryResponseDTO[]) => {
+          setDiaries(data);
+          
           // 현재 월의 데이터 필터링
-          const currentMonthData = data.filter((diary: Diary) => {
-            const diaryDate = new Date(diary.date);
+          const currentMonthData = data.filter((diary: DiaryResponseDTO) => {
+            const diaryDate = new Date(diary.createdAt);
             return diaryDate.getMonth() === currentDate.getMonth() &&
                    diaryDate.getFullYear() === currentDate.getFullYear();
           });
 
           // 이전 월의 데이터 필터링
-          const prevMonthData = data.filter((diary: Diary) => {
-            const diaryDate = new Date(diary.date);
+          const prevMonthData = data.filter((diary: DiaryResponseDTO) => {
+            const diaryDate = new Date(diary.createdAt);
             const prevMonth = new Date(currentDate);
             prevMonth.setMonth(prevMonth.getMonth() - 1);
             return diaryDate.getMonth() === prevMonth.getMonth() &&
@@ -102,15 +95,15 @@ const HistoryPage: React.FC = () => {
           });
 
           // 월간 통계 계산
-          const calculateMonthlyStats = (diaries: Diary[]) => {
+          const calculateMonthlyStats = (diaries: DiaryResponseDTO[]) => {
             if (diaries.length === 0) return {
               averageMood: 0,
               diaryRate: 0,
               positiveRate: 0
             };
 
-            const totalMood = diaries.reduce((sum, diary) => sum + getMoodValue(diary.mood), 0);
-            const positiveCount = diaries.filter(diary => diary.mood === 'happy').length;
+            const totalMood = diaries.reduce((sum, diary) => sum + getMoodValue(diary.emotion), 0);
+            const positiveCount = diaries.filter(diary => diary.emotion === 'HAPPY').length;
             const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
 
             return {
@@ -134,36 +127,36 @@ const HistoryPage: React.FC = () => {
 
           // 감정 통계 계산
           const moodCounts = {
-            happy: 0,
-            neutral: 0,
-            anxious: 0,
-            sad: 0,
-            angry: 0
+            HAPPY: 0,
+            NEUTRAL: 0,
+            ANXIOUS: 0,
+            SAD: 0,
+            ANGRY: 0
           };
 
           data.forEach(diary => {
-            moodCounts[diary.mood as keyof typeof moodCounts]++;
+            moodCounts[diary.emotion]++;
           });
 
           const total = data.length;
           const newMoodStats = [
-            { name: '행복', value: Math.round((moodCounts.happy / total) * 100), color: '#FBBF24' },
-            { name: '보통', value: Math.round((moodCounts.neutral / total) * 100), color: '#A3E635' },
-            { name: '불안', value: Math.round((moodCounts.anxious / total) * 100), color: '#60A5FA' },
-            { name: '슬픔', value: Math.round((moodCounts.sad / total) * 100), color: '#818CF8' },
-            { name: '화남', value: Math.round((moodCounts.angry / total) * 100), color: '#F87171' },
+            { name: '행복', value: Math.round((moodCounts.HAPPY / total) * 100), color: '#FBBF24' },
+            { name: '보통', value: Math.round((moodCounts.NEUTRAL / total) * 100), color: '#A3E635' },
+            { name: '불안', value: Math.round((moodCounts.ANXIOUS / total) * 100), color: '#60A5FA' },
+            { name: '슬픔', value: Math.round((moodCounts.SAD / total) * 100), color: '#818CF8' },
+            { name: '화남', value: Math.round((moodCounts.ANGRY / total) * 100), color: '#F87171' },
           ];
 
           setMoodStats(newMoodStats);
 
           // 감정 흐름 데이터 계산
           const sortedDiaries = [...data].sort((a, b) => 
-            new Date(a.date).getTime() - new Date(b.date).getTime()
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           );
 
           const newMoodFlowData = sortedDiaries.map(diary => {
-            const date = new Date(diary.date);
-            const moodValue = getMoodValue(diary.mood);
+            const date = new Date(diary.createdAt);
+            const moodValue = getMoodValue(diary.emotion);
             return {
               date: `${date.getMonth() + 1}/${date.getDate()}`,
               mood: moodValue,
@@ -175,14 +168,14 @@ const HistoryPage: React.FC = () => {
 
           // 시간대별 감정 통계 계산
           const timeOfDayStats: TimeOfDayData[] = [
-            { name: '아침', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 },
-            { name: '점심', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 },
-            { name: '저녁', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 },
-            { name: '밤', happy: 0, neutral: 0, anxious: 0, sad: 0, angry: 0 }
+            { name: '아침', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 },
+            { name: '점심', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 },
+            { name: '저녁', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 },
+            { name: '밤', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 }
           ];
 
-          data.forEach((diary: Diary) => {
-            const hour = new Date(diary.date).getHours();
+          data.forEach((diary: DiaryResponseDTO) => {
+            const hour = new Date(diary.createdAt).getHours();
             let timeIndex = 0;
 
             if (hour >= 5 && hour < 11) timeIndex = 0;      // 아침
@@ -190,13 +183,13 @@ const HistoryPage: React.FC = () => {
             else if (hour >= 17 && hour < 22) timeIndex = 2; // 저녁
             else timeIndex = 3;                              // 밤
 
-            timeOfDayStats[timeIndex][diary.mood as keyof Omit<TimeOfDayData, 'name'>]++;
+            timeOfDayStats[timeIndex][diary.emotion]++;
           });
 
           setTimeOfDayData(timeOfDayStats);
 
           // 활동 패턴 분석
-          const currentMonthContent = currentMonthData.map(diary => diary.content.toLowerCase());
+          const currentMonthContent = currentMonthData.map(diary => diary.body.toLowerCase());
           
           // 긍정적 활동 추출
           const positiveActivities = new Set<string>();
@@ -236,7 +229,7 @@ const HistoryPage: React.FC = () => {
 
           // 패턴 설명 생성
           const weekendDiaries = currentMonthData.filter(diary => {
-            const day = new Date(diary.date).getDay();
+            const day = new Date(diary.createdAt).getDay();
             return day === 0 || day === 6; // 주말
           });
 
@@ -261,15 +254,15 @@ const HistoryPage: React.FC = () => {
           console.error('일기 데이터를 가져오는데 실패했습니다:', error);
         });
     }
-  }, [currentUser?.id, currentDate]);
+  }, [currentUser?.userId, currentDate]);
 
-  const getMoodValue = (mood: string): number => {
-    switch(mood) {
-      case 'happy': return 5;
-      case 'neutral': return 3;
-      case 'anxious': return 2;
-      case 'sad': return 1;
-      case 'angry': return 1;
+  const getMoodValue = (emotion: string): number => {
+    switch(emotion) {
+      case 'HAPPY': return 5;
+      case 'NEUTRAL': return 3;
+      case 'ANXIOUS': return 2;
+      case 'SAD': return 1;
+      case 'ANGRY': return 1;
       default: return 3;
     }
   };

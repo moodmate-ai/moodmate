@@ -10,6 +10,17 @@ interface SignupPageProps {
 const SignupPage: React.FC<SignupPageProps> = ({ onGoogleSignup }) => {
   const navigate = useNavigate();
 
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    const credential = credentialResponse.credential;
+    if (!credential) return;
+
+    try {
+      await onGoogleSignup(credential);
+    } catch (error) {
+      console.error('Signup failed:', error);
+    }
+  };
+
   return (
     <div className="signup-container">
       <div className="signup-box">
@@ -17,13 +28,9 @@ const SignupPage: React.FC<SignupPageProps> = ({ onGoogleSignup }) => {
           <img src="/moodmate.png" alt="MoodMate Logo" />
         </div>
 
-    
         <div className="google-signup-button">
           <GoogleLogin
-            onSuccess={(credentialResponse) => {
-              if(credentialResponse.credential) 
-                onGoogleSignup(credentialResponse.credential);
-            }}
+            onSuccess={handleGoogleSuccess}
             onError={() => {
               console.log('Google Sign Up Failed');
             }}

@@ -9,11 +9,12 @@ const api = axios.create({
   },
 });
 
+// Request interceptor to add Google token to Authorization header
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('googleToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const googleToken = localStorage.getItem('googleToken');
+    if (googleToken) {
+      config.headers.Authorization = `Bearer ${googleToken}`;
     }
     return config;
   },
@@ -22,59 +23,19 @@ api.interceptors.request.use(
   }
 );
 
-export interface Diary {
-  id: string;
-  date: string;
-  mood: string;
-  moodEmoji: string;
-  content: string;
-  growth: number;
-  userId: number;
-}
-
-export interface DiaryRequest {
-  body: string;
-  userId: number;
-}
-
-export interface DiaryResponse {
-  diaryId: number;
-  body: string;
-  userId: number;
-  emotion: string;
-  aiResponse: string;
-  createdAt: string;
-  modifiedAt?: string;
-}
-
-export const diaryApi = {
-  // Create
-  createDiary: async (diary: DiaryRequest) => {
-    const response = await api.post('/diary/create', diary);
-    console.log(response.data);
-    return response.data;
+// Response interceptor for handling common responses
+api.interceptors.response.use(
+  (response) => {
+    return response;
   },
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid, clear from localStorage
+      localStorage.removeItem('googleToken');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
-  // Read
-  getDiaryById: async (id: string) => {
-    const response = await api.get(`/diary/searchid/${id}`);
-    return response.data;
-  },
-
-  getDiariesByUserId: async (userId: number) => {
-    const response = await api.get(`/diary/searchuserid/${userId}`);
-    return response.data as DiaryResponse[];
-  },
-
-  // Update
-  updateDiary: async (id: string, diary: Partial<Diary>) => {
-    const response = await api.put(`/diary/update/${id}`, diary);
-    return response.data;
-  },
-
-  // Delete
-  deleteDiary: async (id: string) => {
-    const response = await api.delete(`/diary/delete/${id}`);
-    return response.data;
-  },
-}; 
+export default api; 

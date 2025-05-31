@@ -13,10 +13,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 
 // Table user
@@ -39,12 +39,12 @@ public class User {
 
     // email
     // 연락용 이메일입니다. 이메일 연동은 별도의 테이블을 사용합니다.
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     // username
     // 계정명입니다.
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = false)
     private String username;
 
     // refreshtoken

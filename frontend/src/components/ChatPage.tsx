@@ -4,7 +4,7 @@ import './ChatPage.css';
 import { subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, format } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { diaryApi, Diary } from '../services/api';
+import { diaryApi, chatApiService, type DiaryResponseDTO, type ChatRequestDTO, type ChatMessageDTO } from '../services';
 
 // Add blank export for components without explicit ChatPage import
 export const ComingSoonPage: React.FC<{ title: string }> = ({ title }) => {
@@ -43,6 +43,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
     emotions: Array<{ name: string; value: number }>;
     keywords: string[];
   } | null>(null);
+  const [currentDiary, setCurrentDiary] = useState<DiaryResponseDTO | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
@@ -61,12 +62,13 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   useEffect(() => {
     if (location.state?.diary) {
       const diary = location.state.diary;
+      setCurrentDiary(diary);
       const initialMessage: Message = {
         id: Date.now().toString(),
-        content: diary.mood === 'happy' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
-                diary.mood === 'sad' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
-                diary.mood === 'angry' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
-                diary.mood === 'anxious' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
+        content: diary.emotion === 'HAPPY' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
+                diary.emotion === 'SAD' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
+                diary.emotion === 'ANGRY' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
+                diary.emotion === 'ANXIOUS' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
                 '오늘 하루는 어떠셨나요? 함께 이야기를 나눠볼까요?',
         sender: 'assistant',
         timestamp: new Date(),
@@ -78,43 +80,44 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
 
   // 선택된 날짜의 일기 데이터 가져오기
   useEffect(() => {
-    if (currentUser?.id) {
+    if (currentUser?.userId) {
       const fetchDiaryData = async () => {
         try {
-          const response = await diaryApi.getDiariesByUserId(currentUser.id);
+          const response = await diaryApi.getDiariesByUserId(currentUser.userId);
           const selectedDateStr = selectedDate.toISOString().split('T')[0];
-          const diary = response.find((d: Diary) => d.date.startsWith(selectedDateStr));
+          const diary = response.find((d: DiaryResponseDTO) => d.createdAt.startsWith(selectedDateStr));
 
           if (diary) {
+            setCurrentDiary(diary);
             // 감정 분석 데이터 생성
             const sentiment = {
-              positive: diary.mood === 'happy' ? 70 : diary.mood === 'neutral' ? 50 : 30,
-              neutral: diary.mood === 'neutral' ? 40 : diary.mood === 'happy' ? 20 : 30,
-              negative: diary.mood === 'sad' || diary.mood === 'angry' ? 40 : diary.mood === 'anxious' ? 30 : 10
+              positive: diary.emotion === 'HAPPY' ? 70 : diary.emotion === 'NEUTRAL' ? 50 : 30,
+              neutral: diary.emotion === 'NEUTRAL' ? 40 : diary.emotion === 'HAPPY' ? 20 : 30,
+              negative: diary.emotion === 'SAD' || diary.emotion === 'ANGRY' ? 40 : diary.emotion === 'ANXIOUS' ? 30 : 10
             };
 
             // 감정 분포 계산
             const emotions = [
-              { name: '행복', value: diary.mood === 'happy' ? 60 : 0 },
-              { name: '평온', value: diary.mood === 'neutral' ? 40 : 0 },
-              { name: '기대', value: diary.mood === 'happy' ? 30 : 0 },
-              { name: '감사', value: diary.mood === 'happy' ? 25 : 0 },
-              { name: '슬픔', value: diary.mood === 'sad' ? 20 : 0 },
-              { name: '걱정', value: diary.mood === 'anxious' ? 15 : 0 },
-              { name: '분노', value: diary.mood === 'angry' ? 10 : 0 }
+              { name: '행복', value: diary.emotion === 'HAPPY' ? 60 : 0 },
+              { name: '평온', value: diary.emotion === 'NEUTRAL' ? 40 : 0 },
+              { name: '기대', value: diary.emotion === 'HAPPY' ? 30 : 0 },
+              { name: '감사', value: diary.emotion === 'HAPPY' ? 25 : 0 },
+              { name: '슬픔', value: diary.emotion === 'SAD' ? 20 : 0 },
+              { name: '걱정', value: diary.emotion === 'ANXIOUS' ? 15 : 0 },
+              { name: '분노', value: diary.emotion === 'ANGRY' ? 10 : 0 }
             ].filter(emotion => emotion.value > 0);
 
             // 키워드 추출 (실제로는 NLP를 사용해야 함)
-            const keywords = diary.content
+            const keywords = diary.body
               .split(/[\s,\.]+/)
               .filter((word: string) => word.length > 1)
               .slice(0, 5);
 
             setMoodAnalysis({
-              summary: diary.mood === 'happy' ? '기분이 좋은 하루' :
-                      diary.mood === 'sad' ? '조금 우울한 하루' :
-                      diary.mood === 'angry' ? '화가 나는 하루' :
-                      diary.mood === 'anxious' ? '불안한 하루' :
+              summary: diary.emotion === 'HAPPY' ? '기분이 좋은 하루' :
+                      diary.emotion === 'SAD' ? '조금 우울한 하루' :
+                      diary.emotion === 'ANGRY' ? '화가 나는 하루' :
+                      diary.emotion === 'ANXIOUS' ? '불안한 하루' :
                       '평온한 하루',
               sentiment,
               emotions,
@@ -122,16 +125,18 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
             });
           } else {
             setMoodAnalysis(null);
+            setCurrentDiary(null);
           }
         } catch (error) {
           console.error('일기 데이터를 가져오는데 실패했습니다:', error);
           setMoodAnalysis(null);
+          setCurrentDiary(null);
         }
       };
 
       fetchDiaryData();
     }
-  }, [currentUser?.id, selectedDate]);
+  }, [currentUser?.userId, selectedDate]);
 
   // Suggested prompts for the welcome screen
   const suggestedPrompts = [
@@ -183,28 +188,32 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
 
   const generateResponse = async (userInput: string) => {
     try {
-      // TODO: 실제 AI API 호출로 교체
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: userInput,
-          userId: currentUser?.id,
-          timestamp: new Date().toISOString()
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('AI 응답을 받아오는데 실패했습니다.');
+      if (!currentUser?.userId || !currentDiary?.diaryId) {
+        throw new Error('사용자 정보 또는 일기 정보가 없습니다.');
       }
 
-      const data = await response.json();
+      const chatMessages: ChatMessageDTO[] = [
+        ...messages.map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        })),
+        {
+          role: 'user',
+          content: userInput
+        }
+      ];
+
+      const chatRequest: ChatRequestDTO = {
+        userId: currentUser.userId,
+        diaryId: currentDiary.diaryId,
+        messages: chatMessages
+      };
+
+      const response = await chatApiService.processUserMessage(chatRequest);
       
       const assistantMessage: Message = {
         id: Date.now().toString(),
-        content: data.message,
+        content: response.botReply,
         sender: 'assistant',
         timestamp: new Date(),
       };
