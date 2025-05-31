@@ -6,7 +6,7 @@ name: Docker Build and Push to Harbor
 on:
   push:
     branches:
-      # - main # Trigger on pushes to the 'main' branch
+      - main # Trigger on pushes to the 'main' branch
       - feat/gh-action
     paths:
       - 'backend/**'
