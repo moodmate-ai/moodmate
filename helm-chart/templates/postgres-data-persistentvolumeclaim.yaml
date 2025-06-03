@@ -6,9 +6,11 @@ metadata:
     io.kompose.service: postgres-data
   name: postgres-data
 spec:
+  storageClassName: efs-postgres
   accessModes:
     - ReadWriteMany
   resources:
     requests:
-      storage: 4G
+      storage: 5G
+  storageClassName: gp2
 status: {}

@@ -25,7 +25,7 @@ spec:
         io.kompose.service: frontend
     spec:
       containers:
-        - image: frontend
+        - image: harbor.rst0070.com/moodmate/frontend:latest
           name: frontend
           ports:
             - containerPort: 3000

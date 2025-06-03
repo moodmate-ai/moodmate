@@ -24,13 +24,13 @@ spec:
         io.kompose.service: ai-api
     spec:
       containers:
-          env:
+        - env:
             - name: GEMINI_API_KEY
               valueFrom:
                 configMapKeyRef:
                   key: GEMINI_API_KEY
                   name: ai-api--env
-          image: ai-api
+          image: harbor.rst0070.com/moodmate/ai-api:latest
           name: ai-api
           ports:
             - containerPort: 8000

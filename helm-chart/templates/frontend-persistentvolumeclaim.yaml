@@ -10,5 +10,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2G
+      storage: 4G
+  storageClassName: gp2
 status: {}

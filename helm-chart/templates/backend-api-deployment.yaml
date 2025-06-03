@@ -28,7 +28,7 @@ spec:
         - env:
             - name: SPRING_PROFILES_ACTIVE
               value: dev
-          image: backend-api
+          image: harbor.rst0070.com/moodmate/backend:latest
           name: backend-api
           ports:
             - containerPort: 8080
