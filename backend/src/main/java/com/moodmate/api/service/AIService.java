@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,14 +17,15 @@ public class AIService {
     
     private RestTemplate restTemplate;
 
-    //@Value("${app.services.ai-api.chat-url}")
-    private final String chatUrl;
-    private final String emotionAnalysisUrl;
+    @Value("${app.service.ai-api.chat-url}")
+    private String chatUrl;
+    @Value("${app.service.ai-api.emotion-analysis-url}")
+    private String emotionAnalysisUrl;
 
     public AIService() {
         this.restTemplate = new RestTemplate();
-        this.chatUrl = "http://localhost:8000/v1/chat/completion";
-        this.emotionAnalysisUrl = "http://localhost:8000/v1/diary/analyze";
+        // this.chatUrl = "http://localhost:8000/v1/chat/completion";
+        // this.emotionAnalysisUrl = "http://localhost:8000/v1/diary/analyze";
     }
 
 

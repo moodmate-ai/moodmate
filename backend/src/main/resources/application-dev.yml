@@ -9,15 +9,15 @@ server:
 app:
   service:
     ai-api:
-      chat-url: http://localhost:8000/v1/chat/completion
-      emotion-analysis-url: http://localhost:8000/v1/diary/analyze
+      chat-url: http://ai-api:8000/v1/chat/completion
+      emotion-analysis-url: http://ai-api:8000/v1/diary/analyze
 
 spring:
   config:
     activate:
       on-profile: dev
   datasource:
-    url: jdbc:postgresql://localhost:5432/moodmate
+    url: jdbc:postgresql://postgres:5432/moodmate
     username: moodmate
     password: moodmate
   devtools:

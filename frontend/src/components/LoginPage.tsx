@@ -37,6 +37,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onGoogleLogin }) => {
         </div>
 
         <div className="signup-link">
+          {process.env.REACT_APP_BACKEND_URL}
           계정이 없으신가요? <a href="/signup">회원가입</a>
         </div>
       </div>

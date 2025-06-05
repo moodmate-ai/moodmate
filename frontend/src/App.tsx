@@ -94,8 +94,9 @@ function AppContent() {
 }
 
 function AppWrapper() {
+  const clientId: string = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
   return (
-    <GoogleOAuthProvider clientId="915916980733-lvdt868sgdsre814er46fl3v3a5jkthn.apps.googleusercontent.com">
+    <GoogleOAuthProvider clientId={clientId}>
       <AuthProvider>
         <AppContent />
       </AuthProvider>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Note: Chat API uses different base URL (without /v1)
-const CHAT_API_BASE_URL = 'http://localhost:8080/api';
+const CHAT_API_BASE_URL = process.env.REACT_APP_BACKEND_URL + "/api";
 
 const chatApi = axios.create({
   baseURL: CHAT_API_BASE_URL,
