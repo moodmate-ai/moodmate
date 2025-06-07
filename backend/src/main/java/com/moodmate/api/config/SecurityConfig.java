@@ -19,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.http.HttpMethod;
 
 import com.moodmate.api.service.JwtAuthService;
 
@@ -75,7 +76,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         
         // Allow all origins for development (you should restrict this in production)
-        configuration.setAllowedOriginPatterns(Arrays.asList("*"));
+        configuration.addAllowedOriginPattern("*");
         
         // Allow all HTTP methods
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"));
@@ -109,7 +110,11 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> 
                 authorize.requestMatchers(
-                    "/**",
+                    HttpMethod.OPTIONS,
+                    "/**"
+                ).permitAll()
+                .requestMatchers(
+                    // "/**",
                     "/",
                     "/login",
                     "/api/chat/**",
