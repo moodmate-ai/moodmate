@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service-name: moodmate-backend-api
+  name: backend-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service-name: moodmate-backend-api
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service-name: moodmate-backend-api
+    spec:
+      containers:
+        - env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev
+          envFrom:
+            - secretRef:
+                name: infisical-secrets
+          image: harbor.rst0070.com/moodmate/backend:latest
+          name: backend-api
+          ports:
+            - containerPort: 8080
+          resources: {}
+          volumeMounts:
+            - mountPath: /spring
+              name: backend
+      restartPolicy: Always
+      volumes:
+        - name: backend
+          persistentVolumeClaim:
+            claimName: backend
+status: {}

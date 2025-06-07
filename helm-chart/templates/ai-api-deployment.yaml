@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service-name: moodmate-ai-api
+  name: ai-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service-name: moodmate-ai-api
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        service-name: moodmate-ai-api
+    spec:
+      containers:
+        - envFrom:
+            - secretRef:
+                name: infisical-secrets
+          image: harbor.rst0070.com/moodmate/ai-api:latest
+          name: ai-api
+          ports:
+            - containerPort: 8000
+          resources: {}
+      restartPolicy: Always
+status: {}

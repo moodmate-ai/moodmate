@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service-name: moodmate-frontend
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service-name: moodmate-frontend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        service-name: moodmate-frontend
+    spec:
+      containers:
+        - envFrom:
+            - secretRef:
+                name: infisical-secrets
+          image: harbor.rst0070.com/moodmate/frontend:latest
+          name: frontend
+          ports:
+            - containerPort: 3000
+          resources: {}
+          volumeMounts:
+            - mountPath: /build
+              name: frontend
+      restartPolicy: Always
+      volumes:
+        - name: frontend
+          persistentVolumeClaim:
+            claimName: frontend
+status: {}

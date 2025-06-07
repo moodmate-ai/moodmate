@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    service-name: moodmate-postgres
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service-name: moodmate-postgres
+  template:
+    metadata:
+      labels:
+        service-name: moodmate-postgres
+    spec:
+      containers:
+        - env:
+            - name: POSTGRES_DB
+              value: moodmate
+            - name: POSTGRES_PASSWORD
+              value: moodmate
+            - name: POSTGRES_USER
+              value: moodmate
+            - name: PGDATA
+              value: /var/lib/postgresql/data/moodmate-data
+          image: postgres:17
+          name: postgres
+          ports:
+            - containerPort: 5432
+          resources: {}
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgres-data
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-data
+status: {}
