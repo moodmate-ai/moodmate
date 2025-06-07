@@ -1,5 +1,5 @@
 apiVersion: v2
 name: moodmate-test
-description: Moodmate Chart / A generated Helm Chart for docker-compose from Skippbox Kompose.
+description: moodmate helm chart.
 version: 0.0.1
 home: https://github.com/moodmate-ai/moodmate

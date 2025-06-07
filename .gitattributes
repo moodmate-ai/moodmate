@@ -1,3 +1,2 @@
 backend/src/main/resources/application-oauth.yml filter=git-crypt diff=git-crypt
 **/.env filter=git-crypt diff=git-crypt
-helm-chart/templates/ai-api--env-configmap.yaml filter=git-crypt diff=git-crypt
