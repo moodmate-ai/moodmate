@@ -6,21 +6,48 @@ server:
       enabled: true
       force: true
 
+app:
+  service:
+    ai-api:
+      chat-url: http://ai-api:8000/v1/chat/completion
+      emotion-analysis-url: http://ai-api:8000/v1/diary/analyze
+
 spring:
   config:
     activate:
-      on-profile: prod
+      on-profile: dev
   datasource:
-    url: jdbc:postgresql://postgres:5432/moodmate
+    url: jdbc:postgresql://postgres.default.svc.cluster.local:5432/moodmate
     username: moodmate
     password: moodmate
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
   jpa:
     show-sql: true
     database: postgresql
     hibernate:
       naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
       ddl-auto: update
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://accounts.google.com
 
 springdoc:
-  swagger-ui.enabled: false
+  api-docs:
+    enabled: true
+    path: /api-docs
+  swagger-ui:
+    operationsSorter: alpha
+    tagsSorter: alpha
+    path: /swagger-ui
+    disableSwaggerDefaultUrl: false
+    docExpansion: list
+  paths-to-match:
+  - /api/**
+  show-actuator: true
