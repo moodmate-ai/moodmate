@@ -114,8 +114,9 @@ public class SecurityConfig {
                     "/**"
                 ).permitAll()
                 .requestMatchers(
-                    // "/**",
                     "/",
+                    "/api/v1/user/create",
+                    "/api/v1/user/searchemail/**",
                     "/login",
                     "/api/chat/**",
                     "/swagger-ui/**",
