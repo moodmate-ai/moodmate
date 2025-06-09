@@ -15,7 +15,7 @@ app:
 spring:
   config:
     activate:
-      on-profile: dev
+      on-profile: prod
   datasource:
     url: jdbc:postgresql://postgres.default.svc.cluster.local:5432/moodmate
     username: moodmate
