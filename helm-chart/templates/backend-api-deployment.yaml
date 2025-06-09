@@ -24,6 +24,7 @@ spec:
             - secretRef:
                 name: infisical-secrets
           image: harbor.rst0070.com/moodmate/backend:latest
+          imagePullPolicy: Always
           name: backend-api
           ports:
             - containerPort: 8080
