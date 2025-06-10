@@ -31,11 +31,11 @@ ChartJS.register(
 
 interface TimeOfDayData {
   name: string;
-  HAPPY: number;
-  NEUTRAL: number;
-  ANXIOUS: number;
-  SAD: number;
-  ANGRY: number;
+  JOY: number;
+  NO_EMOTION: number;
+  FEAR: number;
+  SADNESS: number;
+  ANGER: number;
 }
 
 const HistoryPage: React.FC = () => {
@@ -103,7 +103,7 @@ const HistoryPage: React.FC = () => {
             };
 
             const totalMood = diaries.reduce((sum, diary) => sum + getMoodValue(diary.emotion), 0);
-            const positiveCount = diaries.filter(diary => diary.emotion === 'HAPPY').length;
+            const positiveCount = diaries.filter(diary => diary.emotion === 'JOY').length;
             const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
 
             return {
@@ -127,11 +127,11 @@ const HistoryPage: React.FC = () => {
 
           // 감정 통계 계산
           const moodCounts = {
-            HAPPY: 0,
-            NEUTRAL: 0,
-            ANXIOUS: 0,
-            SAD: 0,
-            ANGRY: 0
+            JOY: 0,
+            NO_EMOTION: 0,
+            FEAR: 0,
+            SADNESS: 0,
+            ANGER: 0
           };
 
           data.forEach(diary => {
@@ -140,11 +140,11 @@ const HistoryPage: React.FC = () => {
 
           const total = data.length;
           const newMoodStats = [
-            { name: '행복', value: Math.round((moodCounts.HAPPY / total) * 100), color: '#FBBF24' },
-            { name: '보통', value: Math.round((moodCounts.NEUTRAL / total) * 100), color: '#A3E635' },
-            { name: '불안', value: Math.round((moodCounts.ANXIOUS / total) * 100), color: '#60A5FA' },
-            { name: '슬픔', value: Math.round((moodCounts.SAD / total) * 100), color: '#818CF8' },
-            { name: '화남', value: Math.round((moodCounts.ANGRY / total) * 100), color: '#F87171' },
+            { name: '행복', value: Math.round((moodCounts.JOY / total) * 100), color: '#FBBF24' },
+            { name: '보통', value: Math.round((moodCounts.NO_EMOTION / total) * 100), color: '#A3E635' },
+            { name: '불안', value: Math.round((moodCounts.FEAR / total) * 100), color: '#60A5FA' },
+            { name: '슬픔', value: Math.round((moodCounts.SADNESS / total) * 100), color: '#818CF8' },
+            { name: '화남', value: Math.round((moodCounts.ANGER / total) * 100), color: '#F87171' },
           ];
 
           setMoodStats(newMoodStats);
@@ -168,10 +168,10 @@ const HistoryPage: React.FC = () => {
 
           // 시간대별 감정 통계 계산
           const timeOfDayStats: TimeOfDayData[] = [
-            { name: '아침', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 },
-            { name: '점심', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 },
-            { name: '저녁', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 },
-            { name: '밤', HAPPY: 0, NEUTRAL: 0, ANXIOUS: 0, SAD: 0, ANGRY: 0 }
+            { name: '아침', JOY: 0, NO_EMOTION: 0, FEAR: 0, SADNESS: 0, ANGER: 0 },
+            { name: '점심', JOY: 0, NO_EMOTION: 0, FEAR: 0, SADNESS: 0, ANGER: 0 },
+            { name: '저녁', JOY: 0, NO_EMOTION: 0, FEAR: 0, SADNESS: 0, ANGER: 0 },
+            { name: '밤', JOY: 0, NO_EMOTION: 0, FEAR: 0, SADNESS: 0, ANGER: 0 }
           ];
 
           data.forEach((diary: DiaryResponseDTO) => {
@@ -258,11 +258,11 @@ const HistoryPage: React.FC = () => {
 
   const getMoodValue = (emotion: string): number => {
     switch(emotion) {
-      case 'HAPPY': return 5;
-      case 'NEUTRAL': return 3;
-      case 'ANXIOUS': return 2;
-      case 'SAD': return 1;
-      case 'ANGRY': return 1;
+      case 'JOY': return 5;
+      case 'NO_EMOTION': return 3;
+      case 'FEAR': return 2;
+      case 'SADNESS': return 1;
+      case 'ANGER': return 1;
       default: return 3;
     }
   };

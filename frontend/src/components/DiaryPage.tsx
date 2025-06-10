@@ -23,10 +23,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // 상태 관리
+  // 상태 관리 - 새로운 emotion 타입으로 업데이트
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentMood, setCurrentMood] = useState<'HAPPY' | 'SAD' | 'ANGRY' | 'NEUTRAL' | 'ANXIOUS'>('NEUTRAL');
+  const [currentMood, setCurrentMood] = useState<'JOY' | 'SADNESS' | 'ANGER' | 'NO_EMOTION' | 'FEAR'>('NO_EMOTION');
   const [content, setContent] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [editingDiaryId, setEditingDiaryId] = useState<number | null>(null);
@@ -94,19 +94,19 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
     }
   };
   
-  // 감정에 따른 색상 반환
+  // 감정에 따른 색상 반환 - 새로운 emotion 값으로 업데이트
   const getMoodColor = (emotion: string) => {
     switch(emotion) {
       case 'JOY': return 'happy';
       case 'SADNESS': return 'sad';
       case 'ANGER': return 'angry';
       case 'NO_EMOTION': return 'neutral';
-      case 'ANXIOUS': return 'anxious';
+      case 'FEAR': return 'anxious';
       default: return 'neutral';
     }
   };
   
-  // 감정 이모티콘 반환
+  // 감정 이모티콘 반환 - 새로운 emotion 값으로 업데이트
   const getMoodEmoji = (emotion: string) => {
     switch(emotion) {
       case 'JOY': return '😊';
@@ -355,11 +355,11 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                 </div>
               </div>
               
-              {/* 감정 선택 */}
+              {/* 감정 선택 - 새로운 emotion 값으로 업데이트 */}
               {/* <div className="mood-selection">
                 <p>오늘의 기분</p>
                 <div className="mood-buttons">
-                  {(['HAPPY', 'NEUTRAL', 'SAD', 'ANGRY', 'ANXIOUS'] as const).map((mood) => (
+                  {(['JOY', 'NO_EMOTION', 'SADNESS', 'ANGER', 'FEAR'] as const).map((mood) => (
                     <button 
                       key={mood}
                       className={`mood-button ${currentMood === mood ? 'active' : ''} ${getMoodColor(mood)}`}
@@ -444,7 +444,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                   </div>
                 </div>
 
-                {/* AI 댓글 섹션 */}
+                {/* AI 댓글 섹션 - 새로운 emotion 값으로 업데이트 */}
                 <div className="ai-comment-section">
                   <div className="comment-list">
                     <div className="comment">
@@ -453,10 +453,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                         <div className="comment-bubble">
                           <p className="comment-content">
                             {entry.aiResponse || (
-                              entry.emotion === 'HAPPY' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
-                              entry.emotion === 'SAD' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
-                              entry.emotion === 'ANGRY' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
-                              entry.emotion === 'ANXIOUS' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
+                              entry.emotion === 'JOY' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
+                              entry.emotion === 'SADNESS' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
+                              entry.emotion === 'ANGER' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
+                              entry.emotion === 'FEAR' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
                               '오늘 하루는 어떠셨나요? 함께 이야기를 나눠볼까요?'
                             )}
                           </p>

@@ -10,7 +10,7 @@ export interface DiaryResponseDTO {
   diaryId: number;
   body: string;
   userId: number;
-  emotion: 'HAPPY' | 'SAD' | 'ANGRY' | 'NEUTRAL' | 'ANXIOUS';
+  emotion: 'JOY' | 'SADNESS' | 'FEAR' | 'ANGER' | 'NO_EMOTION';
   aiResponse: string;
   createdAt: string;
   modifiedAt?: string;
