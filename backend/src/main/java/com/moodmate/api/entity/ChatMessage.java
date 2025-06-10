@@ -25,7 +25,6 @@ public class ChatMessage {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 
     @Column(nullable = false)

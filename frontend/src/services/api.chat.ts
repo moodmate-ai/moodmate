@@ -42,12 +42,7 @@ export interface ChatResponseDTO {
 
 // Chat entity interface (for getChatsByDiary response)
 export interface Chat {
-  id?: number;
-  userId: number;
-  diaryId: number;
-  userMessage: string;
-  botReply: string;
-  createdAt?: string;
+  messages: ChatMessageDTO[];
 }
 
 export const chatApiService = {
@@ -58,7 +53,7 @@ export const chatApiService = {
   },
 
   // GET /api/chat/diary/{diaryId}
-  getChatsByDiary: async (diaryId: number): Promise<Chat[]> => {
+  getChatByDiary: async (diaryId: number): Promise<ChatMessageDTO[]> => {
     const response = await chatApi.get(`/chat/diary/${diaryId}`);
     return response.data;
   },

@@ -86,17 +86,25 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
           if (diary) {
             setCurrentDiary(diary);
             
-            // 기존 메시지가 없고 location.state에서 온 데이터가 아닌 경우에만 초기 메시지 설정
-            if (messages.length === 0 && !location.state?.diary) {
-              const initialMessage: Message = {
+            const existingChat = await chatApiService.getChatByDiary(diary.diaryId);
+            if (existingChat?.length > 0) {
+              setMessages(existingChat.map(msg => ({
                 id: Date.now().toString(),
-                content: diary.aiResponse || '안녕하세요! 오늘 하루는 어떠셨나요?',
-                sender: 'assistant',
+                content: msg.content,
+                sender: msg.role === 'user' ? 'user' : 'assistant',
                 timestamp: new Date(),
-              };
-              setMessages([initialMessage]);
-              setShowAnalysis(false);
+              })));
+            } else {
+              setMessages([
+                {
+                  id: Date.now().toString(),
+                  content: diary.aiResponse || '안녕하세요! 오늘 하루는 어떠셨나요?',
+                  sender: 'assistant',
+                  timestamp: new Date(),
+                }
+              ]);
             }
+            setShowAnalysis(false);
 
             // 감정 분석 데이터 생성 - 실제 emotion 값 사용
             const getEmotionValues = (emotion: string) => {

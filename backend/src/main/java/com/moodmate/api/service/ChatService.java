@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -85,8 +86,20 @@ public class ChatService {
                 .build();
     }
 
-    public List<Chat> getChatsByDiary(Long diaryId) {
-        return chatRepository.findByDiary_DiaryId(diaryId);
+    public List<ChatDTO.ChatMessageDTO> getChatMessageByDiary(Long diaryId) {
+
+        List<ChatMessage> chatMessages = chatMessageRepository.findByChatId(diaryId);
+
+        if (chatMessages.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return chatMessages.stream()
+            .map(message -> ChatDTO.ChatMessageDTO.builder()
+                .role(message.getRole())
+                .content(message.getContent())
+                .build())
+            .collect(Collectors.toList());
     }
 
 }
