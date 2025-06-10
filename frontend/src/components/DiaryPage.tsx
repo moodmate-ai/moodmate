@@ -97,10 +97,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   // 감정에 따른 색상 반환
   const getMoodColor = (emotion: string) => {
     switch(emotion) {
-      case 'HAPPY': return 'happy';
-      case 'SAD': return 'sad';
-      case 'ANGRY': return 'angry';
-      case 'NEUTRAL': return 'neutral';
+      case 'JOY': return 'happy';
+      case 'SADNESS': return 'sad';
+      case 'ANGER': return 'angry';
+      case 'NO_EMOTION': return 'neutral';
       case 'ANXIOUS': return 'anxious';
       default: return 'neutral';
     }
@@ -109,11 +109,11 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   // 감정 이모티콘 반환
   const getMoodEmoji = (emotion: string) => {
     switch(emotion) {
-      case 'HAPPY': return '😊';
-      case 'SAD': return '😢';
-      case 'ANGRY': return '😠';
-      case 'NEUTRAL': return '😌';
-      case 'ANXIOUS': return '😰';
+      case 'JOY': return '😊';
+      case 'SADNESS': return '😢';
+      case 'ANGER': return '😠';
+      case 'NO_EMOTION': return '😌';
+      case 'FEAR': return '😰';
       default: return '😌';
     }
   };
@@ -356,7 +356,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
               </div>
               
               {/* 감정 선택 */}
-              <div className="mood-selection">
+              {/* <div className="mood-selection">
                 <p>오늘의 기분</p>
                 <div className="mood-buttons">
                   {(['HAPPY', 'NEUTRAL', 'SAD', 'ANGRY', 'ANXIOUS'] as const).map((mood) => (
@@ -369,7 +369,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                     </button>
                   ))}
                 </div>
-              </div>
+              </div> */}
               
               {/* 일기 입력 */}
               <textarea 
