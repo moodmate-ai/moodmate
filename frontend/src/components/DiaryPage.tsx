@@ -148,9 +148,13 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const handleSave = async () => {
     if (!currentUser?.userId) return;
 
+    // Convert selectedDate to proper DateTime format (00:00:00 for the selected date)
+    const selectedDateTime = new Date(selectedDate + 'T00:00:00');
+
     const diaryRequest: DiaryRequestDTO = {
       body: content,
-      userId: currentUser.userId
+      userId: currentUser.userId,
+      createdAt: selectedDateTime.toISOString() // Send the selected date as createdAt
     };
 
     setIsLoading(true);
@@ -188,7 +192,9 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   };
 
   const handleEdit = (diary: DiaryResponseDTO) => {
+    const diaryDate = new Date(diary.createdAt);
     setSelectedDate(diary.createdAt.split('T')[0]);
+    setDatePickerDate(diaryDate);
     setCurrentMood(diary.emotion);
     setContent(diary.body);
     setEditingDiaryId(diary.diaryId);

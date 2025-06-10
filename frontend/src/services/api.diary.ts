@@ -4,6 +4,7 @@ import api from './api';
 export interface DiaryRequestDTO {
   body: string;
   userId: number;
+  createdAt: string; // ISO string format for the selected date
 }
 
 export interface DiaryResponseDTO {

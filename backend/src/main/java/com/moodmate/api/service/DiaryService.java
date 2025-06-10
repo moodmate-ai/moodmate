@@ -58,7 +58,7 @@ public class DiaryService {
             .aiResponse(emotionResponse.message)
             .emotion(Emotion.from(emotionResponse.emotion))
             //.emotion(Emotion.NO_EMOTION)
-            .createdAt(LocalDateTime.now())
+            .createdAt(dto.getCreatedAt())
             .build();
 
         diaryRepository.save(diary);
@@ -100,6 +100,10 @@ public class DiaryService {
         
         existDiary.get().setBody(dto.getBody());
         existDiary.get().setModifiedAt(LocalDateTime.now());
+        // Update the createdAt if provided (allows changing the diary date)
+        if (dto.getCreatedAt() != null) {
+            existDiary.get().setCreatedAt(dto.getCreatedAt());
+        }
 
         return DiaryResponseDTO.fromEntity(existDiary.get());
     }
