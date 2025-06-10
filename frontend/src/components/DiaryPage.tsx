@@ -67,6 +67,25 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   useEffect(() => {
     fetchDiaries();
   }, [currentUser?.userId]);
+
+  useEffect(() => {
+    if (currentUser?.userId) {
+      setEditingDiaryId(null);
+      setContent('');
+      fetchDiaries();
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if(diaries.length > 0) {
+      const diary = diaries.find((diary) => diary.createdAt.split('T')[0] === selectedDate);
+      if(diary) {
+        setEditingDiaryId(diary.diaryId);
+        setContent(diary.body);
+      }
+    }
+  }, [diaries])
+
   
   // 월 이름 배열
   const months = [
