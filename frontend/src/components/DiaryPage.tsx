@@ -77,6 +77,8 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   }, [selectedDate]);
 
   useEffect(() => {
+    setEditingDiaryId(null);
+    setContent('');
     if(diaries.length > 0) {
       const diary = diaries.find((diary) => diary.createdAt.split('T')[0] === selectedDate);
       if(diary) {
