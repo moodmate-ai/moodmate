@@ -82,8 +82,7 @@ class AnalyzeUsecase:
             messages=[
                 {"role": "system", "content": self.first_message_prompt},
                 {"role": "user", "content": content}
-            ],
-            response_format={"type": "json_object"}
+            ]
         )
         
         return emotion, first_message

@@ -72,11 +72,11 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   // 감정에 따른 색상 반환
   const getMoodColor = (emotion: string) => {
     switch(emotion) {
-      case 'HAPPY': return 'happy';
-      case 'SAD': return 'sad';
-      case 'ANGRY': return 'angry';
-      case 'NEUTRAL': return 'neutral';
-      case 'ANXIOUS': return 'anxious';
+      case 'JOY': return 'happy';
+      case 'SADNESS': return 'sad';
+      case 'ANGER': return 'angry';
+      case 'NO_EMOTION': return 'neutral';
+      case 'FEAR': return 'anxious';
       default: return 'neutral';
     }
   };
@@ -84,11 +84,11 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
   // 감정 이모티콘 반환
   const getMoodEmoji = (emotion: string) => {
     switch(emotion) {
-      case 'HAPPY': return '😊';
-      case 'SAD': return '😢';
-      case 'ANGRY': return '😠';
-      case 'NEUTRAL': return '😌';
-      case 'ANXIOUS': return '😰';
+      case 'JOY': return '😊';
+      case 'SADNESS': return '😢';
+      case 'ANGER': return '😠';
+      case 'NO_EMOTION': return '😌';
+      case 'FEAR': return '😰';
       default: return '😌';
     }
   };

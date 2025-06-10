@@ -65,11 +65,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
       setCurrentDiary(diary);
       const initialMessage: Message = {
         id: Date.now().toString(),
-        content: diary.emotion === 'HAPPY' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
-                diary.emotion === 'SAD' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
-                diary.emotion === 'ANGRY' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
-                diary.emotion === 'ANXIOUS' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
-                '오늘 하루는 어떠셨나요? 함께 이야기를 나눠볼까요?',
+        content: diary.aiResponse || '안녕하세요! 오늘 하루는 어떠셨나요?',
         sender: 'assistant',
         timestamp: new Date(),
       };
@@ -89,36 +85,104 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
 
           if (diary) {
             setCurrentDiary(diary);
-            // 감정 분석 데이터 생성
-            const sentiment = {
-              positive: diary.emotion === 'HAPPY' ? 70 : diary.emotion === 'NEUTRAL' ? 50 : 30,
-              neutral: diary.emotion === 'NEUTRAL' ? 40 : diary.emotion === 'HAPPY' ? 20 : 30,
-              negative: diary.emotion === 'SAD' || diary.emotion === 'ANGRY' ? 40 : diary.emotion === 'ANXIOUS' ? 30 : 10
+            
+            const existingChat = await chatApiService.getChatByDiary(diary.diaryId);
+            if (existingChat?.length > 0) {
+              setMessages(existingChat.map(msg => ({
+                id: Date.now().toString(),
+                content: msg.content,
+                sender: msg.role === 'user' ? 'user' : 'assistant',
+                timestamp: new Date(),
+              })));
+            } else {
+              setMessages([
+                {
+                  id: Date.now().toString(),
+                  content: diary.aiResponse || '안녕하세요! 오늘 하루는 어떠셨나요?',
+                  sender: 'assistant',
+                  timestamp: new Date(),
+                }
+              ]);
+            }
+            setShowAnalysis(false);
+
+            // 감정 분석 데이터 생성 - 실제 emotion 값 사용
+            const getEmotionValues = (emotion: string) => {
+              switch (emotion) {
+                case 'JOY':
+                  return { positive: 70, neutral: 20, negative: 10 };
+                case 'SADNESS':
+                  return { positive: 10, neutral: 30, negative: 60 };
+                case 'ANGER':
+                  return { positive: 5, neutral: 25, negative: 70 };
+                case 'FEAR':
+                  return { positive: 15, neutral: 35, negative: 50 };
+                case 'NO_EMOTION':
+                default:
+                  return { positive: 40, neutral: 50, negative: 10 };
+              }
             };
 
-            // 감정 분포 계산
-            const emotions = [
-              { name: '행복', value: diary.emotion === 'HAPPY' ? 60 : 0 },
-              { name: '평온', value: diary.emotion === 'NEUTRAL' ? 40 : 0 },
-              { name: '기대', value: diary.emotion === 'HAPPY' ? 30 : 0 },
-              { name: '감사', value: diary.emotion === 'HAPPY' ? 25 : 0 },
-              { name: '슬픔', value: diary.emotion === 'SAD' ? 20 : 0 },
-              { name: '걱정', value: diary.emotion === 'ANXIOUS' ? 15 : 0 },
-              { name: '분노', value: diary.emotion === 'ANGRY' ? 10 : 0 }
-            ].filter(emotion => emotion.value > 0);
+            const sentiment = getEmotionValues(diary.emotion);
+
+            // 감정 분포 계산 - 실제 emotion 값 기반
+            const getEmotionDistribution = (emotion: string) => {
+              const emotionMap = {
+                'JOY': [
+                  { name: '행복', value: 60 },
+                  { name: '기대', value: 40 },
+                  { name: '감사', value: 35 },
+                  { name: '평온', value: 25 }
+                ],
+                'SADNESS': [
+                  { name: '슬픔', value: 55 },
+                  { name: '외로움', value: 35 },
+                  { name: '아쉬움', value: 25 },
+                  { name: '그리움', value: 20 }
+                ],
+                'ANGER': [
+                  { name: '분노', value: 60 },
+                  { name: '짜증', value: 45 },
+                  { name: '실망', value: 30 },
+                  { name: '억울함', value: 25 }
+                ],
+                'FEAR': [
+                  { name: '불안', value: 50 },
+                  { name: '걱정', value: 40 },
+                  { name: '초조함', value: 30 },
+                  { name: '긴장', value: 25 }
+                ],
+                'NO_EMOTION': [
+                  { name: '평온', value: 45 },
+                  { name: '안정', value: 35 },
+                  { name: '차분함', value: 25 },
+                  { name: '보통', value: 20 }
+                ]
+              };
+              return emotionMap[emotion as keyof typeof emotionMap] || emotionMap['NO_EMOTION'];
+            };
+
+            const emotions = getEmotionDistribution(diary.emotion);
 
             // 키워드 추출 (실제로는 NLP를 사용해야 함)
             const keywords = diary.body
-              .split(/[\s,\.]+/)
+              .split(/[\s,\.!?]+/)
               .filter((word: string) => word.length > 1)
-              .slice(0, 5);
+              .slice(0, 6);
+
+            const getEmotionSummary = (emotion: string) => {
+              const summaryMap = {
+                'JOY': '기분이 좋은 하루',
+                'SADNESS': '조금 우울한 하루',
+                'ANGER': '화가 나는 하루',
+                'FEAR': '불안한 하루',
+                'NO_EMOTION': '평온한 하루'
+              };
+              return summaryMap[emotion as keyof typeof summaryMap] || '평범한 하루';
+            };
 
             setMoodAnalysis({
-              summary: diary.emotion === 'HAPPY' ? '기분이 좋은 하루' :
-                      diary.emotion === 'SAD' ? '조금 우울한 하루' :
-                      diary.emotion === 'ANGRY' ? '화가 나는 하루' :
-                      diary.emotion === 'ANXIOUS' ? '불안한 하루' :
-                      '평온한 하루',
+              summary: getEmotionSummary(diary.emotion),
               sentiment,
               emotions,
               keywords
@@ -126,11 +190,19 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
           } else {
             setMoodAnalysis(null);
             setCurrentDiary(null);
+            // 일기가 없는 경우 메시지 초기화
+            if (!location.state?.diary) {
+              setMessages([]);
+            }
           }
         } catch (error) {
           console.error('일기 데이터를 가져오는데 실패했습니다:', error);
           setMoodAnalysis(null);
           setCurrentDiary(null);
+          // 에러 발생 시 메시지 초기화
+          if (!location.state?.diary) {
+            setMessages([]);
+          }
         }
       };
 
@@ -189,7 +261,9 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   const generateResponse = async (userInput: string) => {
     try {
       if (!currentUser?.userId || !currentDiary?.diaryId) {
-        throw new Error('사용자 정보 또는 일기 정보가 없습니다.');
+        alert("일기를 먼저 작성해주세요.")
+        window.location.href = '/diary';
+        return;
       }
 
       const chatMessages: ChatMessageDTO[] = [

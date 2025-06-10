@@ -1,7 +1,6 @@
 package com.moodmate.api.controller;
 
 import com.moodmate.api.dto.ChatDTO;
-import com.moodmate.api.entity.Chat;
 import com.moodmate.api.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,9 +40,9 @@ public class ChatController {
         summary = "Get chat history for a diary",
         description = "Retrieves the complete chat history for a specific diary"
     )
-    public ResponseEntity<List<Chat>> getChatsByDiary(
+    public ResponseEntity<List<ChatDTO.ChatMessageDTO>> getChatMessageByDiary(
         @Parameter(description = "ID of the diary") @PathVariable Long diaryId
     ) {
-        return ResponseEntity.ok(chatService.getChatsByDiary(diaryId));
+        return ResponseEntity.ok(chatService.getChatMessageByDiary(diaryId));
     }
 }
