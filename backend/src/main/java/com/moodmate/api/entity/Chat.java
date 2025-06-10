@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "chat")
@@ -15,22 +18,20 @@ import java.time.LocalDateTime;
 public class Chat {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id; // This will be the diary_id
+
+    @OneToOne
+    @MapsId // This maps the id field to the diary's primary key
+    @JoinColumn(name = "diary_id", nullable = false)
+    private Diary diary;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "diary_id", nullable = false)
-    private Diary diary;
-
-    @Column(columnDefinition = "TEXT")
-    private String userMessage;
-
-    @Column(columnDefinition = "TEXT")
-    private String botReply;
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<ChatMessage> messages = new ArrayList<>();
 
     private LocalDateTime timestamp;
 }
