@@ -29,7 +29,7 @@ public class GoogleAccount {
     private Long id;
 
     @OneToOne(optional = false)
-    @JoinColumn(name = "user_id")
+     @JoinColumn(name = "user_id", nullable = false)
     private User connectedUser;
 
     @Column(nullable = false)

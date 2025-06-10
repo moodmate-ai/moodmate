@@ -18,6 +18,11 @@ export interface UserResponseDTO {
   modifiedAt?: string;
 }
 
+export interface ProfileImageDTO {
+  userId: number;
+  image: string | ArrayBuffer | null;
+}
+
 export const userApi = {
   // POST /api/v1/user/create
   createUser: async (userRequest: UserRequestDTO): Promise<UserResponseDTO> => {
@@ -62,9 +67,20 @@ export const userApi = {
     return response.data;
   },
 
+  // GET /api/v1/user/image
+  getProfileImage: async (userId: number): Promise<ProfileImageDTO> => {
+    const response = await api.get(`/user/image/${userId}`);
+    return response.data;
+  },
+
   // PUT /api/v1/user/update/{userId}
   updateUser: async (userId: number, userRequest: UserRequestDTO): Promise<UserResponseDTO> => {
     const response = await api.put(`/user/update/${userId}`, userRequest);
+    return response.data;
+  },
+
+  updateProfileImage: async (imageRequest: ProfileImageDTO): Promise<ProfileImageDTO> => {
+    const response = await api.put(`/user/updateimage`, imageRequest);
     return response.data;
   },
 

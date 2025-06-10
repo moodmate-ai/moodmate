@@ -11,8 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 import com.moodmate.api.dto.UserDTO.UserRequestDTO;
 import com.moodmate.api.dto.UserDTO.UserResponseDTO;
 import com.moodmate.api.entity.GoogleAccount;
+import com.moodmate.api.entity.ProfileImage;
 import com.moodmate.api.entity.User;
 import com.moodmate.api.repository.GoogleAccountRepository;
+import com.moodmate.api.repository.ProfileImageRepository;
 import com.moodmate.api.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class UserService {
 
     private final GoogleAccountRepository googleRepository;
     private final UserRepository userRepository;
+    private final ProfileImageRepository imageRepository;
 
     @Transactional
     public UserResponseDTO createUser(UserRequestDTO dto) throws RuntimeException {
@@ -99,14 +102,6 @@ public class UserService {
         return UserResponseDTO.fromEntity(existUser.get());
     }
 
-//   @Transactional
-//   public UserResponseDTO updateUserToken(UserResponseDTO dto) throws RuntimeException {
-//       Optional<User> existUser = userRepository.findById(dto.getId());
-//
-//       if(existUser.isEmpty())
-//           throw new RuntimeException("Cannot Find User");
-//   }
-
     @Transactional
     public void deleteUser(Long id) throws RuntimeException {
         Optional<User> existUser = userRepository.findById(id);
@@ -115,9 +110,12 @@ public class UserService {
             throw new RuntimeException("Cannot Find User with DB ID: " + id);
         
         Optional<GoogleAccount> existAccount =  googleRepository.findByConnectedUser(existUser.get());
+        Optional<ProfileImage> existImage = imageRepository.findByUser(existUser.get());
 
         if(existAccount.isPresent())
             googleRepository.delete(existAccount.get());
+        if(existImage.isPresent())
+            imageRepository.delete(existImage.get());
 
         userRepository.delete(existUser.get());
     }

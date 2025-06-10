@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.moodmate.api.dto.UserDTO.ProfileImageDTO;
 import com.moodmate.api.dto.UserDTO.UserRequestDTO;
 import com.moodmate.api.dto.UserDTO.UserResponseDTO;
+import com.moodmate.api.service.ProfileImageService;
 import com.moodmate.api.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/user")
 public class UserController {
     private final UserService usersvc;
-    
+    private final ProfileImageService imgsvc;
+
     // CREATE METHOD
 
     @PostMapping("/create")
@@ -35,6 +38,12 @@ public class UserController {
         System.out.println("createUser: " + dto);
         UserResponseDTO res = usersvc.createUser(dto);
         System.out.println("createUser: " + res);
+        
+        imgsvc.createProfileImage(ProfileImageDTO.builder()
+            .userId(res.getUserId())
+            .image(null)
+            .build());
+
         return ResponseEntity.ok(res);
     }
 
@@ -98,6 +107,16 @@ public class UserController {
         return ResponseEntity.ok(res);
     }
 
+    @GetMapping("/image/{userId}")
+    @Operation(
+        summary = "프로필 이미지 불러오기"
+    )
+    public ResponseEntity<ProfileImageDTO> getProfileImage(@PathVariable Long userId) {
+        ProfileImageDTO res = imgsvc.readProfileImageByUserId(userId);
+
+        return ResponseEntity.ok(res);
+    }
+
     // UPDATE METHOD
 
     @PutMapping("/update/{userId}")
@@ -108,6 +127,16 @@ public class UserController {
         System.out.println("updateUser: " + userId + " " + dto);
         UserResponseDTO res = usersvc.updateUser(userId, dto);
         System.out.println("updateUser: " + res);
+        return ResponseEntity.ok(res);
+    }
+
+    @PutMapping("/updateimage")
+    @Operation(
+        summary = "프로필 이미지 변경"
+    )
+    public ResponseEntity<ProfileImageDTO> updateProfileImage(@RequestBody ProfileImageDTO dto) {
+        ProfileImageDTO res = imgsvc.updateProfileImage(dto);
+
         return ResponseEntity.ok(res);
     }
 

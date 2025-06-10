@@ -2,6 +2,7 @@ package com.moodmate.api.dto;
 
 import java.time.LocalDateTime;
 
+import com.moodmate.api.entity.ProfileImage;
 import com.moodmate.api.entity.User;
 import com.moodmate.api.enumerated.Role;
 
@@ -139,4 +140,39 @@ public class UserDTO {
                 .build();
         }
     }
+
+    @Data
+    @Builder
+    @Getter
+    @Setter
+    public static class ProfileImageDTO {
+
+        @Schema(
+            name = "userId",
+            description = "연결된 User ID",
+            type = "Long",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            example = "1"
+        )
+        private Long userId;
+
+        @Schema(
+            name = "image",
+            description = "이미지 데이터",
+            type = "byte[]",
+            requiredMode = Schema.RequiredMode.NOT_REQUIRED,
+            example = ""
+        )
+        private byte[] image;
+
+        public static ProfileImageDTO fromEntity(ProfileImage image) {
+            Long userId = image.getUser().getUserId();
+            
+            return ProfileImageDTO.builder()
+                .userId(userId)
+                .image(image.getImage())
+                .build();
+        }
+    }
+
 }

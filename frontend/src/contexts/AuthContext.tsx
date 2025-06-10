@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import { jwtDecode } from 'jwt-decode';
 import { userApi, type UserRequestDTO, type UserResponseDTO } from '../services';
 import assert from 'assert';
+import { ProfileImageDTO } from '../services/api.user';
 
 interface GoogleJwtPayload {
   email: string;
@@ -18,7 +19,7 @@ interface AuthUser {
   username: string;
   role: 'USER' | 'ADMIN';
   name?: string;
-  profileImage?: string;
+  profileImage?: string | ArrayBuffer | null;
   createdAt: string;
   modifiedAt?: string;
 }
@@ -76,6 +77,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.setItem('googleToken', jwt);
       }
 
+      let imageResponse: ProfileImageDTO;
       let userResponse: UserResponseDTO = await userApi.getUserByEmail(decoded.email);
       if (userResponse == null || userResponse.email == null) {
         console.log('User not found, creating new user...');
@@ -88,7 +90,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
 
         userResponse = await userApi.createUser(userRequest);
+        
+        var imageRes: string | ArrayBuffer | null = await fetch(decoded.picture)
+          .then(response => response.blob())
+          .then(blob => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            return new Promise((res) => {
+              reader.onloadend = () => {
+                res(reader.result);
+              }})
+          });
+        
+        const imageRequest: ProfileImageDTO = {
+          userId: userResponse.userId,
+          image: imageRes? "data:image/jpeg;base64," + imageRes: null
+        };
+
+        imageResponse = await userApi.updateProfileImage(imageRequest);
+
         console.log('New user created:', userResponse);
+      }
+      else {
+        imageResponse = await userApi.getProfileImage(userResponse.userId);
       };
 
 
@@ -99,7 +123,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         username: userResponse.username,
         role: userResponse.role,
         name: userResponse.name,
-        profileImage: decoded.picture, // Use Google profile picture
+        profileImage: imageResponse.image,
         createdAt: userResponse.createdAt?.toString(),
         modifiedAt: userResponse.modifiedAt?.toString()
       };
