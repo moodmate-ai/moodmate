@@ -94,11 +94,11 @@ public class DiaryService {
             throw new RuntimeException("Cannot Find Diary");
         
         existDiary.get().setBody(dto.getBody());
-        existDiary.get().setModifiedAt(LocalDateTime.now());
-        // Update the createdAt if provided (allows changing the diary date)
-        if (dto.getCreatedAt() != null) {
-            existDiary.get().setCreatedAt(dto.getCreatedAt());
-        }
+        // existDiary.get().setModifiedAt(LocalDateTime.now());
+        // // Update the createdAt if provided (allows changing the diary date)
+        // if (dto.getCreatedAt() != null) {
+        //     existDiary.get().setCreatedAt(dto.getCreatedAt());
+        // }
 
         return DiaryResponseDTO.fromEntity(existDiary.get());
     }

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { diaryApi, type DiaryResponseDTO, type DiaryRequestDTO } from '../services';
 import './DiaryPage.css';
-import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
+import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addDays, subDays, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
@@ -148,13 +148,14 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const handleSave = async () => {
     if (!currentUser?.userId) return;
 
-    // Convert selectedDate to proper DateTime format (00:00:00 for the selected date)
-    const selectedDateTime = new Date(selectedDate + 'T00:00:00');
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const selectedDateTime = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    // UTC+0 로 강제
 
     const diaryRequest: DiaryRequestDTO = {
       body: content,
       userId: currentUser.userId,
-      createdAt: selectedDateTime.toISOString() // Send the selected date as createdAt
+      createdAt: selectedDateTime.toISOString()
     };
 
     setIsLoading(true);
@@ -219,13 +220,8 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
 
   // 현재 선택된 날짜의 일기 목록
   const currentDateDiaries = diaries.filter((entry: DiaryResponseDTO) => {
-    const entryDate = new Date(entry.createdAt);
-    const selectedDateObj = new Date(selectedDate);
-    return (
-      entryDate.getFullYear() === selectedDateObj.getFullYear() &&
-      entryDate.getMonth() === selectedDateObj.getMonth() &&
-      entryDate.getDate() === selectedDateObj.getDate()
-    );
+    const entryDate = format(parseISO(entry.createdAt), 'yyyy-MM-dd');
+    return entryDate === selectedDate;
   });
 
   return (
@@ -249,9 +245,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
             <button 
               className="date-nav-button"
               onClick={() => {
-                const prevDay = new Date(selectedDate);
-                prevDay.setDate(prevDay.getDate() - 1);
-                setSelectedDate(prevDay.toISOString().split('T')[0]);
+                const currentDate = parseISO(selectedDate + 'T00:00:00');
+                const prevDay = subDays(currentDate, 1);
+                setSelectedDate(format(prevDay, 'yyyy-MM-dd'));
+                setDatePickerDate(prevDay);
               }}
             >
               <ChevronLeft size={20} />
@@ -261,7 +258,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                 className="date-selector-button"
                 onClick={handleDatePickerClick}
               >
-                <span>{format(new Date(selectedDate), 'yyyy년 MM월 dd일 EEEE', { locale: ko })}</span>
+                <span>{format(parseISO(selectedDate + 'T00:00:00'), 'yyyy년 MM월 dd일 EEEE', { locale: ko })}</span>
               </button>
               {showDatePicker && (
                 <div className="date-picker-overlay" onClick={() => setShowDatePicker(false)}>
@@ -337,9 +334,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
             <button 
               className="date-nav-button"
               onClick={() => {
-                const nextDay = new Date(selectedDate);
-                nextDay.setDate(nextDay.getDate() + 1);
-                setSelectedDate(nextDay.toISOString().split('T')[0]);
+                const currentDate = parseISO(selectedDate + 'T00:00:00');
+                const nextDay = addDays(currentDate, 1);
+                setSelectedDate(format(nextDay, 'yyyy-MM-dd'));
+                setDatePickerDate(nextDay);
               }}
             >
               <ChevronRight size={20} />
