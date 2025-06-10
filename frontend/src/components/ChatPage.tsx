@@ -4,8 +4,10 @@ import './ChatPage.css';
 import { subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, format, addDays } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { ko } from 'date-fns/locale';
 import { parseISO, subDays, subHours } from 'date-fns';
 import { diaryApi, chatApiService, type DiaryResponseDTO, type ChatRequestDTO, type ChatMessageDTO } from '../services';
+import { date_to_unified_format, get_current_date } from '../services/date';
 
 // Add blank export for components without explicit ChatPage import
 export const ComingSoonPage: React.FC<{ title: string }> = ({ title }) => {
@@ -29,12 +31,14 @@ interface ChatPageProps {
   profileImage?: string;
 }
 
-const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImage = 'https://via.placeholder.com/150' }) => {
+const ChatPage: React.FC<ChatPageProps> = () => {
   const { currentUser } = useAuth();
+  const userName = currentUser?.name || '';
+  const profileImage = currentUser?.profileImage || '';
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isThinking, setIsThinking] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState<String>(get_current_date());
   const [datePickerDate, setDatePickerDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showAnalysis, setShowAnalysis] = useState(messages.length === 0);
@@ -53,10 +57,9 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   // 전달받은 날짜로 초기화
   useEffect(() => {
     if (location.state?.date) {
-      const date = new Date(location.state.date);
-      
-      setSelectedDate(date);
-      setDatePickerDate(date);
+      console.log("passed date", location.state.date)
+      setSelectedDate(location.state.date.split("T")[0])
+      setDatePickerDate(location.state.date);
     }
   }, [location.state?.date]);
 
@@ -82,8 +85,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
       const fetchDiaryData = async () => {
         try {
           const response = await diaryApi.getDiariesByUserId(currentUser.userId);
-          const dateStr = addDays(subHours(selectedDate, 9), 1).toISOString().split("T")[0];
-          const diary = response.find((d: DiaryResponseDTO) => d.createdAt.split("T")[0] === dateStr);
+          const diary = response.find((d: DiaryResponseDTO) => d.createdAt.split("T")[0] === selectedDate);
 
           if (diary) {
             setCurrentDiary(diary);
@@ -348,24 +350,22 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   };
 
   const handleDatePickerChange = (date: Date) => {
-    setSelectedDate(date);
+    setSelectedDate(date_to_unified_format(date));
     setDatePickerDate(date);
     setShowDatePicker(false);
   };
 
   const handlePrevDay = () => {
-    const prevDay = new Date(selectedDate);
-    prevDay.setDate(prevDay.getDate() - 1);
-    console.log('Previous day:', prevDay);
-    setSelectedDate(prevDay);
+    const currentDate = parseISO(selectedDate + 'T09:00:00');
+    const prevDay = subDays(currentDate, 1);
+    setSelectedDate(format(prevDay, 'yyyy-MM-dd'));
     setDatePickerDate(prevDay);
   };
 
   const handleNextDay = () => {
-    const nextDay = new Date(selectedDate);
-    nextDay.setDate(nextDay.getDate() + 1);
-    console.log('Next day:', nextDay);
-    setSelectedDate(nextDay);
+    const currentDate = parseISO(selectedDate + 'T00:00:00');
+    const nextDay = addDays(currentDate, 1);
+    setSelectedDate(format(nextDay, 'yyyy-MM-dd'));
     setDatePickerDate(nextDay);
   };
 
@@ -404,12 +404,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
               className="date-selector-button"
               onClick={handleDatePickerClick}
             >
-              <span>{selectedDate.toLocaleDateString('ko-KR', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                weekday: 'long'
-              })}</span>
+              <span>{format(parseISO(selectedDate + 'T00:00:00'), 'yyyy년 MM월 dd일 EEEE', { locale: ko })}</span>
             </button>
             {showDatePicker && (
               <div className="date-picker-overlay" onClick={() => setShowDatePicker(false)}>

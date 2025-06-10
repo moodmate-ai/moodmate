@@ -7,6 +7,7 @@ import './DiaryPage.css';
 import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addDays, subDays, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { get_current_date } from '../services/date';
 
 interface DiaryPageProps {
   isLoggedIn: boolean;
@@ -28,7 +29,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [currentMood, setCurrentMood] = useState<'JOY' | 'SADNESS' | 'ANGER' | 'NO_EMOTION' | 'FEAR'>('NO_EMOTION');
   const [content, setContent] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(get_current_date());
   const [editingDiaryId, setEditingDiaryId] = useState<number | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [datePickerDate, setDatePickerDate] = useState(new Date());
@@ -39,7 +40,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
       const { editingDiaryId, selectedDate, currentMood, content } = location.state;
       if (editingDiaryId) {
         setEditingDiaryId(editingDiaryId);
-        setSelectedDate(selectedDate);
+        setSelectedDate(selectedDate.split("T")[0]);
         setCurrentMood(currentMood);
         setContent(content);
       }
