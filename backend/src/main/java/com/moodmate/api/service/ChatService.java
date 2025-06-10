@@ -47,6 +47,13 @@ public class ChatService {
             messages
         );
 
+        messages.add(
+            ChatDTO.ChatMessageDTO.builder()
+            .role("assistant")
+            .content(response.content)
+            .build()
+        );
+
         // Upsert logic: Check if Chat already exists for this diary
         Optional<Chat> existingChatOpt = chatRepository.findById(requestDTO.getDiaryId());
         
