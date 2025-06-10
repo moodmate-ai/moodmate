@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import './DashboardPage.css';
 import { useAuth } from '../contexts/AuthContext';
 import { diaryApi, type DiaryResponseDTO } from '../services';
+import { get_current_date } from '../services/date';
+import { format, parseISO, subDays } from 'date-fns';
 
 interface DashboardPageProps {
   userName: string;
@@ -74,31 +76,25 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
           );
 
           let currentStreak = 0;
-          let currentDate = new Date();
-          currentDate.setHours(0, 0, 0, 0);
+          let currentDate = get_current_date();
 
           // 오늘 일기를 작성했는지 확인
           const hasTodayDiary = sortedDiaries.some(diary => {
-            const diaryDate = new Date(diary.createdAt);
-            diaryDate.setHours(0, 0, 0, 0);
-            return diaryDate.getTime() === currentDate.getTime();
+            return diary.createdAt.split("T")[0] === currentDate;
           });
 
           if (hasTodayDiary) {
             currentStreak = 1;
-            let checkDate = new Date(currentDate);
-            checkDate.setDate(checkDate.getDate() - 1);
+            let checkDate = format(subDays(parseISO(currentDate), 1), 'yyyy-MM-dd');
 
             while (true) {
               const hasDiary = sortedDiaries.some(diary => {
-                const diaryDate = new Date(diary.createdAt);
-                diaryDate.setHours(0, 0, 0, 0);
-                return diaryDate.getTime() === checkDate.getTime();
+                return diary.createdAt.split("T")[0] === checkDate;
               });
 
               if (!hasDiary) break;
               currentStreak++;
-              checkDate.setDate(checkDate.getDate() - 1);
+              checkDate = format(subDays(parseISO(checkDate), 1), 'yyyy-MM-dd');
             }
           }
 
