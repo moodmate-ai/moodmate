@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { MoreVertical, Send, Smile, Paperclip, Bot, Calendar, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import './ChatPage.css';
-import { subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, format } from 'date-fns';
+import { subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, format, addDays } from 'date-fns';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { parseISO, subDays, subHours } from 'date-fns';
 import { diaryApi, chatApiService, type DiaryResponseDTO, type ChatRequestDTO, type ChatMessageDTO } from '../services';
 
 // Add blank export for components without explicit ChatPage import
@@ -53,6 +54,7 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
   useEffect(() => {
     if (location.state?.date) {
       const date = new Date(location.state.date);
+      
       setSelectedDate(date);
       setDatePickerDate(date);
     }
@@ -80,8 +82,8 @@ const ChatPage: React.FC<ChatPageProps> = ({ userName = '홍길동', profileImag
       const fetchDiaryData = async () => {
         try {
           const response = await diaryApi.getDiariesByUserId(currentUser.userId);
-          const selectedDateStr = selectedDate.toISOString().split('T')[0];
-          const diary = response.find((d: DiaryResponseDTO) => d.createdAt.startsWith(selectedDateStr));
+          const dateStr = addDays(subHours(selectedDate, 9), 1).toISOString().split("T")[0];
+          const diary = response.find((d: DiaryResponseDTO) => d.createdAt.split("T")[0] === dateStr);
 
           if (diary) {
             setCurrentDiary(diary);
