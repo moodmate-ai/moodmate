@@ -12,9 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.moodmate.api.dto.DiaryDTO.DiaryRequestDTO;
 import com.moodmate.api.dto.DiaryDTO.DiaryResponseDTO;
+import com.moodmate.api.entity.Chat;
 import com.moodmate.api.entity.Diary;
 import com.moodmate.api.entity.User;
 import com.moodmate.api.enumerated.Emotion;
+import com.moodmate.api.repository.ChatRepository;
+import com.moodmate.api.repository.ChatMessageRepository;
 import com.moodmate.api.repository.DiaryRepository;
 import com.moodmate.api.repository.UserRepository;
 
@@ -27,6 +30,8 @@ public class DiaryService {
     private final AIService aiService;
     private final UserRepository userRepository;
     private final DiaryRepository diaryRepository;
+    private final ChatRepository chatRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     @Transactional
     public DiaryResponseDTO createDiary(DiaryRequestDTO dto) throws RuntimeException {
@@ -34,16 +39,7 @@ public class DiaryService {
         
         if(existUser.isEmpty())
             throw new RuntimeException("Cannot Find User");
-        // User mockUser = User.builder()
-        //     .userId(1L)
-        //     .email("test@test.com")
-        //     .username("test")
-        //     .role(Role.USER)
-        //     .name("test")
-        //     .createdAt(LocalDateTime.now())
-        //     .modifiedAt(LocalDateTime.now())
-        //     .build();
-    
+
         String diaryId = UUID.randomUUID().toString();
 
         AIService.EmotionResponseDTO emotionResponse = aiService.generateEmotionResponse(
@@ -57,7 +53,6 @@ public class DiaryService {
             .user(existUser.get())
             .aiResponse(emotionResponse.message)
             .emotion(Emotion.from(emotionResponse.emotion))
-            //.emotion(Emotion.NO_EMOTION)
             .createdAt(dto.getCreatedAt())
             .build();
 
@@ -114,6 +109,12 @@ public class DiaryService {
 
         if(existDiary.isEmpty())
             throw new RuntimeException("Cannot Find Diary");
+
+        Chat chat = chatRepository.findById(id).orElse(null);
+        if(chat != null) {
+            chatMessageRepository.deleteByChatId(chat.getId());
+            chatRepository.delete(chat);
+        }
 
         diaryRepository.delete(existDiary.get());
     }
