@@ -12,11 +12,11 @@ interface DashboardPageProps {
 
 const getMoodValue = (emotion: string): number => {
   switch(emotion) {
-    case 'HAPPY': return 5;
-    case 'NEUTRAL': return 3;
-    case 'ANXIOUS': return 2;
-    case 'SAD': return 1;
-    case 'ANGRY': return 1;
+    case 'JOY': return 5;
+    case 'NO_EMOTION': return 3;
+    case 'FEAR': return 2;
+    case 'SADNESS': return 1;
+    case 'ANGER': return 1;
     default: return 3;
   }
 };
@@ -41,11 +41,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
           
           // 감정 통계 계산
           const moodCounts = {
-            HAPPY: 0,
-            NEUTRAL: 0,
-            ANXIOUS: 0,
-            SAD: 0,
-            ANGRY: 0
+            JOY: 0,
+            NO_EMOTION: 0,
+            FEAR: 0,
+            SADNESS: 0,
+            ANGER: 0
           };
 
           data.forEach((diary: DiaryResponseDTO) => {
@@ -54,11 +54,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
 
           const total = data.length;
           const newMoodStats = [
-            { name: '행복', value: Math.round((moodCounts.HAPPY / total) * 100), color: '#FBBF24' },
-            { name: '보통', value: Math.round((moodCounts.NEUTRAL / total) * 100), color: '#A3E635' },
-            { name: '불안', value: Math.round((moodCounts.ANXIOUS / total) * 100), color: '#60A5FA' },
-            { name: '슬픔', value: Math.round((moodCounts.SAD / total) * 100), color: '#818CF8' },
-            { name: '화남', value: Math.round((moodCounts.ANGRY / total) * 100), color: '#F87171' },
+            { name: '행복', value: Math.round((moodCounts.JOY / total) * 100), color: '#FBBF24' },
+            { name: '보통', value: Math.round((moodCounts.NO_EMOTION / total) * 100), color: '#A3E635' },
+            { name: '불안', value: Math.round((moodCounts.FEAR / total) * 100), color: '#60A5FA' },
+            { name: '슬픔', value: Math.round((moodCounts.SADNESS / total) * 100), color: '#818CF8' },
+            { name: '화남', value: Math.round((moodCounts.ANGER / total) * 100), color: '#F87171' },
           ];
 
           setMoodStats(newMoodStats);
@@ -136,7 +136,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
             .sort((a: DiaryResponseDTO, b: DiaryResponseDTO) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
           if (recentDiaries.length > 0) {
-            const positiveDiaries = recentDiaries.filter((d: DiaryResponseDTO) => d.emotion === 'HAPPY');
+            const positiveDiaries = recentDiaries.filter((d: DiaryResponseDTO) => d.emotion === 'JOY');
             const exerciseDiaries = recentDiaries.filter((d: DiaryResponseDTO) => 
               d.body.toLowerCase().includes('운동') || 
               d.body.toLowerCase().includes('걷기') ||
@@ -145,11 +145,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
 
             let insight = '';
             if (exerciseDiaries.length > 0 && positiveDiaries.length > 0) {
-              const exerciseWithPositive = exerciseDiaries.filter(d => d.emotion === 'HAPPY');
+              const exerciseWithPositive = exerciseDiaries.filter(d => d.emotion === 'JOY');
               if (exerciseWithPositive.length > 0) {
                 insight = '최근 일주일 동안 운동을 했을 때 행복감이 증가했습니다. 오늘도 가벼운 운동을 해보는 건 어떨까요?';
               }
-            } else if (recentDiaries[0].emotion === 'SAD' || recentDiaries[0].emotion === 'ANXIOUS') {
+            } else if (recentDiaries[0].emotion === 'SADNESS' || recentDiaries[0].emotion === 'FEAR') {
               insight = '최근 감정이 다소 불안정한 것 같네요. 마음 편히 휴식을 취하는 시간을 가져보는 건 어떨까요?';
             } else {
               insight = '오늘 하루도 긍정적인 마음으로 시작해보세요. 작은 일에도 감사하는 마음을 가지면 더 행복해질 수 있어요.';
@@ -210,11 +210,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
   // 감정 이모티콘 반환
   const getMoodEmoji = (emotion: string) => {
     switch(emotion) {
-      case 'HAPPY': return '😊';
-      case 'SAD': return '😢';
-      case 'ANGRY': return '😠';
-      case 'NEUTRAL': return '😌';
-      case 'ANXIOUS': return '😰';
+      case 'JOY': return '😊';
+      case 'SADNESS': return '😢';
+      case 'ANGER': return '😠';
+      case 'NO_EMOTION': return '😌';
+      case 'FEAR': return '😰';
       default: return '😌';
     }
   };

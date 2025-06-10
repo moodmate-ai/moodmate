@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { diaryApi, type DiaryResponseDTO, type DiaryRequestDTO } from '../services';
 import './DiaryPage.css';
-import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
+import { format, subMonths, addMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addDays, subDays, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 
@@ -23,10 +23,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // 상태 관리
+  // 상태 관리 - 새로운 emotion 타입으로 업데이트
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-  const [currentMood, setCurrentMood] = useState<'HAPPY' | 'SAD' | 'ANGRY' | 'NEUTRAL' | 'ANXIOUS'>('NEUTRAL');
+  const [currentMood, setCurrentMood] = useState<'JOY' | 'SADNESS' | 'ANGER' | 'NO_EMOTION' | 'FEAR'>('NO_EMOTION');
   const [content, setContent] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [editingDiaryId, setEditingDiaryId] = useState<number | null>(null);
@@ -67,6 +67,25 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   useEffect(() => {
     fetchDiaries();
   }, [currentUser?.userId]);
+
+  useEffect(() => {
+    if (currentUser?.userId) {
+      setEditingDiaryId(null);
+      setContent('');
+      fetchDiaries();
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if(diaries.length > 0) {
+      const diary = diaries.find((diary) => diary.createdAt.split('T')[0] === selectedDate);
+      if(diary) {
+        setEditingDiaryId(diary.diaryId);
+        setContent(diary.body);
+      }
+    }
+  }, [diaries])
+
   
   // 월 이름 배열
   const months = [
@@ -94,19 +113,19 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
     }
   };
   
-  // 감정에 따른 색상 반환
+  // 감정에 따른 색상 반환 - 새로운 emotion 값으로 업데이트
   const getMoodColor = (emotion: string) => {
     switch(emotion) {
       case 'JOY': return 'happy';
       case 'SADNESS': return 'sad';
       case 'ANGER': return 'angry';
       case 'NO_EMOTION': return 'neutral';
-      case 'ANXIOUS': return 'anxious';
+      case 'FEAR': return 'anxious';
       default: return 'neutral';
     }
   };
   
-  // 감정 이모티콘 반환
+  // 감정 이모티콘 반환 - 새로운 emotion 값으로 업데이트
   const getMoodEmoji = (emotion: string) => {
     switch(emotion) {
       case 'JOY': return '😊';
@@ -148,9 +167,14 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   const handleSave = async () => {
     if (!currentUser?.userId) return;
 
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    const selectedDateTime = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+    // UTC+0 로 강제
+
     const diaryRequest: DiaryRequestDTO = {
       body: content,
-      userId: currentUser.userId
+      userId: currentUser.userId,
+      createdAt: selectedDateTime.toISOString()
     };
 
     setIsLoading(true);
@@ -188,7 +212,9 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
   };
 
   const handleEdit = (diary: DiaryResponseDTO) => {
+    const diaryDate = new Date(diary.createdAt);
     setSelectedDate(diary.createdAt.split('T')[0]);
+    setDatePickerDate(diaryDate);
     setCurrentMood(diary.emotion);
     setContent(diary.body);
     setEditingDiaryId(diary.diaryId);
@@ -213,13 +239,8 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
 
   // 현재 선택된 날짜의 일기 목록
   const currentDateDiaries = diaries.filter((entry: DiaryResponseDTO) => {
-    const entryDate = new Date(entry.createdAt);
-    const selectedDateObj = new Date(selectedDate);
-    return (
-      entryDate.getFullYear() === selectedDateObj.getFullYear() &&
-      entryDate.getMonth() === selectedDateObj.getMonth() &&
-      entryDate.getDate() === selectedDateObj.getDate()
-    );
+    const entryDate = format(parseISO(entry.createdAt), 'yyyy-MM-dd');
+    return entryDate === selectedDate;
   });
 
   return (
@@ -243,9 +264,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
             <button 
               className="date-nav-button"
               onClick={() => {
-                const prevDay = new Date(selectedDate);
-                prevDay.setDate(prevDay.getDate() - 1);
-                setSelectedDate(prevDay.toISOString().split('T')[0]);
+                const currentDate = parseISO(selectedDate + 'T00:00:00');
+                const prevDay = subDays(currentDate, 1);
+                setSelectedDate(format(prevDay, 'yyyy-MM-dd'));
+                setDatePickerDate(prevDay);
               }}
             >
               <ChevronLeft size={20} />
@@ -255,7 +277,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                 className="date-selector-button"
                 onClick={handleDatePickerClick}
               >
-                <span>{format(new Date(selectedDate), 'yyyy년 MM월 dd일 EEEE', { locale: ko })}</span>
+                <span>{format(parseISO(selectedDate + 'T00:00:00'), 'yyyy년 MM월 dd일 EEEE', { locale: ko })}</span>
               </button>
               {showDatePicker && (
                 <div className="date-picker-overlay" onClick={() => setShowDatePicker(false)}>
@@ -331,9 +353,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
             <button 
               className="date-nav-button"
               onClick={() => {
-                const nextDay = new Date(selectedDate);
-                nextDay.setDate(nextDay.getDate() + 1);
-                setSelectedDate(nextDay.toISOString().split('T')[0]);
+                const currentDate = parseISO(selectedDate + 'T00:00:00');
+                const nextDay = addDays(currentDate, 1);
+                setSelectedDate(format(nextDay, 'yyyy-MM-dd'));
+                setDatePickerDate(nextDay);
               }}
             >
               <ChevronRight size={20} />
@@ -355,11 +378,11 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                 </div>
               </div>
               
-              {/* 감정 선택 */}
+              {/* 감정 선택 - 새로운 emotion 값으로 업데이트 */}
               {/* <div className="mood-selection">
                 <p>오늘의 기분</p>
                 <div className="mood-buttons">
-                  {(['HAPPY', 'NEUTRAL', 'SAD', 'ANGRY', 'ANXIOUS'] as const).map((mood) => (
+                  {(['JOY', 'NO_EMOTION', 'SADNESS', 'ANGER', 'FEAR'] as const).map((mood) => (
                     <button 
                       key={mood}
                       className={`mood-button ${currentMood === mood ? 'active' : ''} ${getMoodColor(mood)}`}
@@ -444,7 +467,7 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                   </div>
                 </div>
 
-                {/* AI 댓글 섹션 */}
+                {/* AI 댓글 섹션 - 새로운 emotion 값으로 업데이트 */}
                 <div className="ai-comment-section">
                   <div className="comment-list">
                     <div className="comment">
@@ -453,10 +476,10 @@ const DiaryPage: React.FC<DiaryPageProps> = ({ isLoggedIn, userName, onLogin, on
                         <div className="comment-bubble">
                           <p className="comment-content">
                             {entry.aiResponse || (
-                              entry.emotion === 'HAPPY' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
-                              entry.emotion === 'SAD' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
-                              entry.emotion === 'ANGRY' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
-                              entry.emotion === 'ANXIOUS' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
+                              entry.emotion === 'JOY' ? '오늘은 정말 행복한 하루였네요! 더 자세히 이야기해볼까요?' :
+                              entry.emotion === 'SADNESS' ? '오늘은 조금 슬픈 하루였군요. 이야기를 나누며 마음이 편해질 수 있을 거예요.' :
+                              entry.emotion === 'ANGER' ? '화가 나는 일이 있었군요. 함께 이야기하며 마음을 정리해봐요.' :
+                              entry.emotion === 'FEAR' ? '불안한 마음이 있으신가요? 이야기를 나누며 마음을 가볍게 해봐요.' :
                               '오늘 하루는 어떠셨나요? 함께 이야기를 나눠볼까요?'
                             )}
                           </p>

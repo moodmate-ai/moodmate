@@ -36,6 +36,16 @@ public class DiaryDTO {
             example = "1"
         )
         private Long userId;
+
+        @Schema(
+            name = "createdAt",
+            description = "일기 작성 날짜",
+            type = "String",
+            format = "date-time",
+            requiredMode = Schema.RequiredMode.REQUIRED,
+            example = "2025-06-10T00:00:00"
+        )
+        private LocalDateTime createdAt;
     }
     
     @Data

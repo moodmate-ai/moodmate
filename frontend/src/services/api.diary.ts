@@ -4,13 +4,14 @@ import api from './api';
 export interface DiaryRequestDTO {
   body: string;
   userId: number;
+  createdAt: string; // ISO string format for the selected date
 }
 
 export interface DiaryResponseDTO {
   diaryId: number;
   body: string;
   userId: number;
-  emotion: 'HAPPY' | 'SAD' | 'ANGRY' | 'NEUTRAL' | 'ANXIOUS';
+  emotion: 'JOY' | 'SADNESS' | 'FEAR' | 'ANGER' | 'NO_EMOTION';
   aiResponse: string;
   createdAt: string;
   modifiedAt?: string;
