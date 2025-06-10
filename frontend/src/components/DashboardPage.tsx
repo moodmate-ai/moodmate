@@ -315,7 +315,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
           </div>
         </div>
 
-        <div className="dashboard-card mood-trend-card">
+        {/* <div className="dashboard-card mood-trend-card">
           <div className="card-header">
             <h2 className="card-title">
               <TrendingUp size={20} />
@@ -348,7 +348,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ userName, profileImage })
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="dashboard-card insight-card">
           <div className="card-header">

@@ -448,7 +448,7 @@ const HistoryPage: React.FC = () => {
               <div className="insight-value">
             {monthlyStats.averageMood.toFixed(1)}
             <span className={`insight-change ${monthlyStats.moodChange >= 0 ? 'positive' : 'negative'}`}>
-              {monthlyStats.moodChange >= 0 ? '+' : ''}{monthlyStats.moodChange.toFixed(1)}
+              {monthlyStats.moodChange >= 0 ? '+' : ''}{monthlyStats.moodChange.toFixed(1)}%
             </span>
           </div>
           <div className="insight-description">

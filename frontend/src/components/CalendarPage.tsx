@@ -431,7 +431,7 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ isLoggedIn, userName, onLog
                   {cell && (
                     <>
                       <div className="calendar-day-number">{cell.day}</div>
-                      {hasDiary && (
+                      {cell.isCurrentMonth && hasDiary && (
                         <div className="calendar-mood-emoji">
                           {getMoodEmoji(diary?.emotion || 'NEUTRAL')}
                         </div>
