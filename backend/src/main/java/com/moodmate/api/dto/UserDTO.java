@@ -159,11 +159,11 @@ public class UserDTO {
         @Schema(
             name = "image",
             description = "이미지 데이터",
-            type = "byte[]",
+            type = "String",
             requiredMode = Schema.RequiredMode.NOT_REQUIRED,
             example = ""
         )
-        private byte[] image;
+        private String image;
 
         public static ProfileImageDTO fromEntity(ProfileImage image) {
             Long userId = image.getUser().getUserId();

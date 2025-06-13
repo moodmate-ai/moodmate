@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Camera, Save, User, Moon, Sun, Monitor, Trash2, ArrowLeft } from 'lucide-react';
 import './ProfilePage.css';
 import { useAuth } from '../contexts/AuthContext';
-import { userApi, type UserRequestDTO } from '../services';
+import { userApi, type UserRequestDTO} from '../services';
+import { ProfileImageDTO } from '../services/api.user';
 
 interface ProfilePageProps {
   userName: string;
@@ -71,8 +72,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = () => {
+      reader.onloadend = () => {
         if (typeof reader.result === 'string') {
+          const imageDTO: ProfileImageDTO = {
+            userId: currentUser.userId,
+            image: reader.result
+          };
+
+          userApi.updateProfileImage(imageDTO);
           setImage(reader.result);
         }
       };

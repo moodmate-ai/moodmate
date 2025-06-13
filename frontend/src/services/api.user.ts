@@ -20,7 +20,7 @@ export interface UserResponseDTO {
 
 export interface ProfileImageDTO {
   userId: number;
-  image: string | ArrayBuffer | null;
+  image: string;
 }
 
 export const userApi = {

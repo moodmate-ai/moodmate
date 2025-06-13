@@ -30,9 +30,9 @@ public class ProfileImage {
     private User user;
 
     @Column
-    private byte[] image;
+    private String image;
 
-    public void setImage(byte[] image) {
+    public void setImage(String image) {
         this.image = image;
     }
     

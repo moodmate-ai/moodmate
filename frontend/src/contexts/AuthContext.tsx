@@ -19,7 +19,7 @@ interface AuthUser {
   username: string;
   role: 'USER' | 'ADMIN';
   name?: string;
-  profileImage?: string | ArrayBuffer | null;
+  profileImage?: string;
   createdAt: string;
   modifiedAt?: string;
 }
@@ -91,20 +91,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         userResponse = await userApi.createUser(userRequest);
         
-        var imageRes: string | ArrayBuffer | null = await fetch(decoded.picture)
+        const toDataURL = url => fetch(url)
           .then(response => response.blob())
-          .then(blob => {
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            return new Promise((res) => {
-              reader.onloadend = () => {
-                res(reader.result);
-              }})
-          });
+          .then(blob => new Promise((resolve, reject) => {
+            const reader = new FileReader()
+            reader.onloadend = () => resolve(reader.result)
+            reader.onerror = reject
+            reader.readAsDataURL(blob)
+          }));
+
+        var imageRes: string = '';
+        try {
+          const imageRes = toDataURL(decoded.picture);
+        }
+        catch(err) {
+          const imageRes = '';
+        }
         
         const imageRequest: ProfileImageDTO = {
           userId: userResponse.userId,
-          image: imageRes? "data:image/jpeg;base64," + imageRes: null
+          image: imageRes
         };
 
         imageResponse = await userApi.updateProfileImage(imageRequest);
