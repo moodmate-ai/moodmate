@@ -3,7 +3,8 @@ from ai_api.infra.litellm import get_litellm_router
 from ai_api.core.component.llm.litellm import LiteLLM
 from ai_api.core.domain.usecase.chat import ChatUsecase
 from ai_api.core.domain.usecase.analyze import AnalyzeUsecase
-
+from ai_api.core.component.kb import KB
+import aiohttp
 
 class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
@@ -20,13 +21,20 @@ class Container(containers.DeclarativeContainer):
         model_name=config.llm_model_name,
     )
     
+    knowledge_base = providers.Singleton(
+        KB,
+        api_url=config.knowledge_base_api_url,
+    )
+    
     chat_usecase = providers.Factory(
         ChatUsecase,
         llm_port=llm_port,
+        knowledge_base=knowledge_base,
     )
     
     analyze_usecase = providers.Factory(
         AnalyzeUsecase,
         llm_port=llm_port,
+        knowledge_base=knowledge_base,
     )
 

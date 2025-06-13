@@ -1,4 +1,5 @@
 from ai_api.core.domain.port.llm import LLMPort
+from ai_api.core.domain.port.kb import KnowledgeBase
 from typing import Tuple
 import json
 
@@ -7,8 +8,10 @@ class AnalyzeUsecase:
     def __init__(
         self, 
         llm_port: LLMPort,
+        knowledge_base: KnowledgeBase
     ):
         self.llm_port = llm_port
+        self.knowledge_base = knowledge_base
         
         self.emotion_analysis_prompt = """
         You are an AI assistant that analyzes a user's diary content to extract emotional context.
@@ -60,14 +63,23 @@ class AnalyzeUsecase:
         If the user is sad, comfort them. If joyful, celebrate with them. If angry, validate their frustration. 
         Be supportive and emotionally intelligent in your response.
         
+        Following is extracted knowledge graph from user's diary content.
+        You should use this knowledge graph to response to the user's diary content.
+        {knowledge_graph}
+        
         Following is the user's diary content, you should response to the user's diary content.
         """
     
-    async def execute(self, content: str) -> Tuple[str, str]:
+    async def execute(
+        self,
+        user_id: str,
+        content: str
+    ) -> Tuple[str, str]:
         """
         diary content를 분석.
         - search memory등 필요
         """
+        await self.knowledge_base.add_knowledge(user_id, content)
         
         emotion = await self.llm_port.generate_response(
             messages=[
@@ -78,9 +90,17 @@ class AnalyzeUsecase:
         )
         emotion = json.loads(emotion)["emotion"]
         
+        knowledge = await self.knowledge_base.get_knowledge(
+            user_id,
+            content
+        )
+        prompt = self.first_message_prompt.format(knowledge_graph=knowledge)
+        
+        print(prompt)
+        
         first_message = await self.llm_port.generate_response(
             messages=[
-                {"role": "system", "content": self.first_message_prompt},
+                {"role": "system", "content": prompt},
                 {"role": "user", "content": content}
             ]
         )
