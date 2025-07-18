@@ -20,7 +20,7 @@ async def analyze(
     body: DiaryAnalyzeRequest,
     usecase: AnalyzeUsecase = Depends(Provide[Container.analyze_usecase]),
 )-> DiaryAnalyzeResponse:
-    emotion, first_message = await usecase.execute(body.content)
+    emotion, first_message = await usecase.execute(body.user_id, body.content)
     return DiaryAnalyzeResponse(
         emotion=emotion,
         message=first_message
